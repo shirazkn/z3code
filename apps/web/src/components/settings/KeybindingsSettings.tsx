@@ -79,6 +79,7 @@ import {
 } from "./KeybindingsSettings.logic";
 import { SettingsGroup } from "./SettingsGroup";
 import { SettingsPageContainer, SettingsRow, SettingsSection } from "./settingsLayout";
+import { Z3KeymapSection } from "../../z3/Z3KeymapSection";
 import { keybindingSearchAnchorId, useSearchableSetting } from "./settingsSearch";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { useAtomCommand } from "../../state/use-atom-command";
@@ -1649,6 +1650,8 @@ export function KeybindingsSettingsPanel() {
           </Tooltip>
         </div>
       </SettingsSection>
+
+      <Z3KeymapSection />
 
       {!canWriteSettings ? (
         <p className="text-xs text-muted-foreground">

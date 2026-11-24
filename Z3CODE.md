@@ -18,15 +18,15 @@ The keymap is Zellij's default plus the dotfiles' `config.kdl` deltas. Its one s
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Pane (Cmd+P)           | hjkl/arrows focus · p next · ; last · n new (largest pane) · d down · c right · x close · f fullscreen · r rename thread   |
 | Tab (Cmd+T)            | hl/jk/arrows switch · n new · x close · r rename · 1–9 go · Tab last · b break pane to new tab · [ ] break pane left/right |
-| Resize (Cmd+N)         | hjkl grow that edge · HJKL shrink it · = + − all edges                                                                     |
+| Resize (Cmd+N)         | hjkl/arrows move the pane's border that way (opposite keys undo) · = + − grow/shrink all edges                             |
 | Move (Cmd+H)           | hjkl swap with neighbour · n/Tab next · p previous                                                                         |
 | Scroll (Cmd+S)         | jk line · du half page · hl/PageUp/PageDown/Ctrl+F/Ctrl+B page · [ ] previous/next turn · s find · Ctrl+C bottom           |
 | Session (Cmd+O)        | w thread palette · c settings                                                                                              |
 | Lock (Caps Lock = F18) | every key goes to the page until Caps Lock again                                                                           |
 
-Esc, Enter or the mode key again return to normal mode. A mode swallows the keys it does not bind.
+Esc, Enter or the mode key again return to normal mode. A mode swallows the keys it does not bind. Panes without focus are slightly dimmed; the focused pane has a faint edge glow that brightens while a mode is on (warning tone when locked). Settings → Keybindings → Zellij modes lists every key. Every color comes from the active theme.
 
-Normal mode also has: Alt+N new pane, Alt+HJKL/arrows focus (left/right go to the next tab at the edge), Alt+= Alt+− resize, Alt+I Alt+O move the tab, Home/End/PageUp/PageDown and Ctrl+arrows focus, Cmd+Up/Down focus, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] previous/next tab. A normal-mode key with nothing to act on (no pane or tab there) keeps its stock meaning.
+Normal mode also has: Alt+N new pane, Alt+HJKL focus (Alt+H/L go to the next tab at the edge; Option+arrows stay word moves), Alt+= Alt+− resize, Alt+I Alt+O move the tab, Home/End/PageUp/PageDown and Ctrl+arrows focus, Cmd+Up/Down focus, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] previous/next tab. A normal-mode key with nothing to act on (no pane or tab there) keeps its stock meaning.
 
 Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ]. macOS Hide keeps its menu item and loses Cmd+H.
 

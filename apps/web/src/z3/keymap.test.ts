@@ -37,6 +37,8 @@ describe("resolveKey", () => {
   it("swallows unbound keys in a mode and passes them in normal mode", () => {
     expect(resolve("pane", "z").kind).toBe("swallow");
     expect(resolve("normal", "z").kind).toBe("pass");
+    // Option+arrows stay the text field's word moves.
+    expect(resolve("normal", "alt+ArrowLeft").kind).toBe("pass");
     const direct = resolve("normal", "alt+h");
     expect(direct.kind === "bind" && direct.swallow).toBe(false);
   });
@@ -48,13 +50,11 @@ describe("resolveKey", () => {
     expect(r.kind === "bind" && r.bind.action).toEqual({ do: "renamePane" });
   });
 
-  it("tells grow from shrink by Shift in resize mode", () => {
-    const shrink = resolve("resize", "shift+H");
-    expect(shrink.kind === "bind" && shrink.bind.action).toEqual({
-      do: "resize",
-      grow: false,
-      dir: "left",
-    });
+  it("moves the border with h and Shift+H alike in resize mode", () => {
+    for (const spec of ["h", "shift+H", "ArrowLeft"]) {
+      const r = resolve("resize", spec);
+      expect(r.kind === "bind" && r.bind.action).toEqual({ do: "nudge", dir: "left" });
+    }
   });
 
   it("toggles the lock on F18 and passes every other key while locked", () => {

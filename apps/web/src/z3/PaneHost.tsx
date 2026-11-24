@@ -18,7 +18,7 @@ import {
   targetKey,
 } from "./layout";
 import { useZ3Store } from "./store";
-import { ZellijBar } from "./ZellijBar";
+import { TabRename } from "./TabRename";
 import "./z3.css";
 
 const FULL: Rect = { left: 0, top: 0, width: 1, height: 1 };
@@ -36,6 +36,7 @@ export function PaneHost({
   const composer = useComposerHandleContext();
   const stored = useZ3Store((state) => state.layout);
   const routeKey = useZ3Store((state) => state.routeKey);
+  const mode = useZ3Store((state) => state.mode);
   const key = targetKey(target);
   // Derived in render, so the route's thread shows in its pane on the first frame.
   const layout = key === routeKey ? stored : followRoute(stored, target);
@@ -71,6 +72,7 @@ export function PaneHost({
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
       inert={background}
       data-z3-host
+      data-mode={mode}
     >
       <div data-z3-grid className="relative min-h-0 flex-1">
         {cells.map((leaf) => {
@@ -87,8 +89,8 @@ export function PaneHost({
             />
           );
         })}
+        <TabRename layout={layout} />
       </div>
-      <ZellijBar layout={layout} />
     </SidebarInset>
   );
 }
@@ -131,7 +133,7 @@ function PaneCell({
         {leaf.target ? (
           <ThreadRouteView target={leaf.target} background={background} passive={!focused} />
         ) : (
-          <div data-z3-empty>new pane</div>
+          <div className="m-auto text-muted-foreground text-xs">New pane</div>
         )}
       </ComposerHandleContext>
     </div>

@@ -74,7 +74,7 @@ const focusedIndex = () => cells().findIndex((cell) => cell.hasAttribute("data-f
 const composers = () => [
   ...document.querySelectorAll<HTMLElement>('[data-testid="composer-editor"]'),
 ];
-const modeLabel = () => document.querySelector("[data-z3-mode-label]")?.textContent;
+const mode = () => document.querySelector("[data-z3-host]")?.getAttribute("data-mode");
 const press = (keys: string) => userEvent.keyboard(keys);
 
 it("pane mode splits, moves focus with the route, swallows other keys, and closes", async () => {
@@ -87,12 +87,12 @@ it("pane mode splits, moves focus with the route, swallows other keys, and close
   const firstComposer = composers()[0]!;
 
   await press("{Control>}p{/Control}");
-  expect(modeLabel()).toBe("PANE");
+  expect(mode()).toBe("pane");
   await press("z");
   expect(firstComposer.textContent).toBe("");
 
   await press("c");
-  expect(modeLabel()).toBe("NORMAL");
+  expect(mode()).toBe("normal");
   await vi.waitFor(() => expect(composers()).toHaveLength(2));
   expect(focusedIndex()).toBe(1);
   expect(cells()[0]!.contains(firstComposer)).toBe(true);
@@ -106,9 +106,9 @@ it("pane mode splits, moves focus with the route, swallows other keys, and close
   await press("{Control>}p{/Control}h");
   await vi.waitFor(() => expect(router.state.location.pathname).toBe(threadPath));
   expect(focusedIndex()).toBe(0);
-  expect(modeLabel()).toBe("PANE");
+  expect(mode()).toBe("pane");
   await press("{Escape}");
-  expect(modeLabel()).toBe("NORMAL");
+  expect(mode()).toBe("normal");
   await press("{Alt>}l{/Alt}");
   await vi.waitFor(() => expect(router.state.location.pathname).toBe(draftPath));
   expect(focusedIndex()).toBe(1);
@@ -129,7 +129,6 @@ it("tab mode opens a tab with its own draft and goes back by number", async () =
 
   await press("{Control>}t{/Control}n");
   await vi.waitFor(() => expect(router.state.location.pathname).toContain("/draft/"));
-  expect(document.querySelectorAll("[data-z3-ribbon]")).toHaveLength(2);
   expect(useZ3Store.getState().layout.tabs).toHaveLength(2);
   const tab = activeTab(useZ3Store.getState().layout);
   expect(leaves(tab.root)[0]!.target?.kind).toBe("draft");

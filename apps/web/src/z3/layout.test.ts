@@ -14,7 +14,7 @@ import {
   neighbor,
   placeNewPane,
   rects,
-  resizePane,
+  nudgeBorder,
   splitPane,
   type Layout,
   type Tab,
@@ -82,15 +82,18 @@ describe("neighbor", () => {
   });
 });
 
-describe("resizePane", () => {
-  it("moves the edge on the named side, and stops at the edge and the minimum", () => {
-    const { tab, top } = threePanes();
-    const grown = resizePane(tab, top, "left", true);
-    expect(rects(grown.root).get(top)!.width).toBeCloseTo(0.55);
-    expect(resizePane(tab, top, "right", true)).toBe(tab);
-    let shrunk = tab;
-    for (let i = 0; i < 20; i += 1) shrunk = resizePane(shrunk, top, "left", false);
-    expect(rects(shrunk.root).get(top)!.width).toBeCloseTo(0.1);
+describe("nudgeBorder", () => {
+  it("moves the pane's border with the key, so opposite keys undo each other", () => {
+    const { tab, left, top } = threePanes();
+    const right = nudgeBorder(tab, left, "right");
+    expect(rects(right.root).get(left)!.width).toBeCloseTo(0.55);
+    expect(rects(nudgeBorder(right, left, "left").root).get(left)!.width).toBeCloseTo(0.5);
+    // The rightmost pane has only a left border, so "right" shrinks it.
+    expect(rects(nudgeBorder(tab, top, "right").root).get(top)!.width).toBeCloseTo(0.45);
+    expect(nudgeBorder(createTab(createLeaf(null)), "missing", "up").root).toBeDefined();
+    let squeezed = tab;
+    for (let i = 0; i < 20; i += 1) squeezed = nudgeBorder(squeezed, top, "right");
+    expect(rects(squeezed.root).get(top)!.width).toBeCloseTo(0.1);
   });
 });
 

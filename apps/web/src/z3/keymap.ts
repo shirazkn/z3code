@@ -33,7 +33,8 @@ export type Action =
   | { readonly do: "lastTab" }
   | { readonly do: "moveTab"; readonly step: 1 | -1 }
   | { readonly do: "breakPane"; readonly to: "new" | "left" | "right" }
-  | { readonly do: "resize"; readonly grow: boolean; readonly dir?: Direction }
+  | { readonly do: "nudge"; readonly dir: Direction }
+  | { readonly do: "resize"; readonly grow: boolean }
   | { readonly do: "move"; readonly to: Direction | 1 | -1 }
   | { readonly do: "scroll"; readonly by: "line" | "half" | "page"; readonly step: 1 | -1 }
   | { readonly do: "scrollToBottom" }
@@ -55,7 +56,7 @@ const bind = (keys: string | ReadonlyArray<string>, action?: Action, next?: Mode
   ...(next ? { next } : {}),
 });
 
-const MODE_KEYS: ReadonlyArray<readonly [Mode, string]> = [
+export const MODE_KEYS: ReadonlyArray<readonly [Mode, string]> = [
   ["pane", "mod+p"],
   ["tab", "mod+t"],
   ["resize", "mod+n"],
@@ -112,14 +113,11 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
     bind("tab", { do: "lastTab" }),
   ],
   resize: [
-    bind(["h", "arrowleft"], { do: "resize", grow: true, dir: "left" }),
-    bind(["j", "arrowdown"], { do: "resize", grow: true, dir: "down" }),
-    bind(["k", "arrowup"], { do: "resize", grow: true, dir: "up" }),
-    bind(["l", "arrowright"], { do: "resize", grow: true, dir: "right" }),
-    bind("shift+h", { do: "resize", grow: false, dir: "left" }),
-    bind("shift+j", { do: "resize", grow: false, dir: "down" }),
-    bind("shift+k", { do: "resize", grow: false, dir: "up" }),
-    bind("shift+l", { do: "resize", grow: false, dir: "right" }),
+    // Not Zellij's grow-only Increase/Decrease: the border follows the key, so opposites undo.
+    bind(["h", "arrowleft", "shift+h"], { do: "nudge", dir: "left" }),
+    bind(["j", "arrowdown", "shift+j"], { do: "nudge", dir: "down" }),
+    bind(["k", "arrowup", "shift+k"], { do: "nudge", dir: "up" }),
+    bind(["l", "arrowright", "shift+l"], { do: "nudge", dir: "right" }),
     bind(["=", "shift+="], { do: "resize", grow: true }),
     bind("-", { do: "resize", grow: false }),
   ],
@@ -149,10 +147,11 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
 /** Zellij's `shared_except "locked"` binds, live in every unlocked mode. */
 const UNLOCKED: ReadonlyArray<Bind> = [
   bind("alt+n", { do: "newPane" }),
-  bind(["alt+h", "alt+arrowleft"], { do: "focus", dir: "left", orTab: true }),
-  bind(["alt+l", "alt+arrowright"], { do: "focus", dir: "right", orTab: true }),
-  bind(["alt+j", "alt+arrowdown"], { do: "focus", dir: "down" }),
-  bind(["alt+k", "alt+arrowup"], { do: "focus", dir: "up" }),
+  // Not Alt+arrows: those stay the text field's word and paragraph moves.
+  bind("alt+h", { do: "focus", dir: "left", orTab: true }),
+  bind("alt+l", { do: "focus", dir: "right", orTab: true }),
+  bind("alt+j", { do: "focus", dir: "down" }),
+  bind("alt+k", { do: "focus", dir: "up" }),
   bind(["alt+=", "alt+shift+="], { do: "resize", grow: true }),
   bind("alt+-", { do: "resize", grow: false }),
   bind("alt+i", { do: "moveTab", step: -1 }),
@@ -230,17 +229,61 @@ export function resolveKey(mode: Mode, event: ShortcutEventLike, platform: strin
   return modal ? { kind: "swallow" } : { kind: "pass" };
 }
 
-/** Short hints for the bar, one per mode. */
-export const MODE_HINTS: Readonly<Partial<Record<Mode, string>>> = {
-  normal: "⌘P pane · ⌘T tab · ⌘N resize · ⌘H move · ⌘S scroll · ⌘O session · ⇪ lock",
-  locked: "⇪ unlock",
-  pane: "hjkl focus · n new · d down · c right · x close · f full · r rename · p next · ; last",
-  tab: "hl switch · n new · x close · r rename · 1-9 go · ⇥ last · b break · [ ] break left/right",
-  resize: "hjkl grow · HJKL shrink · = + − all sides",
-  move: "hjkl swap · n ⇥ next · p previous",
-  scroll: "jk line · du half · hl page · [ ] turn · s find · ^C bottom",
-  session: "w threads · c settings",
-  renameTab: "type a name · ⏎ save · esc cancel",
+/** Each mode's keys for Settings, as [keys, what they do]. */
+export const MODE_HINTS: Readonly<
+  Record<Exclude<Mode, "locked" | "renameTab">, ReadonlyArray<readonly [string, string]>>
+> = {
+  normal: [
+    ["⌥N", "new pane"],
+    ["⌥H ⌥J ⌥K ⌥L", "focus"],
+    ["Home End PgUp PgDn", "focus"],
+    ["⌃ arrows", "focus"],
+    ["⌘↑ ⌘↓", "focus up / down"],
+    ["⌘⇧[ ⌘⇧]", "previous / next tab"],
+    ["⌥= ⌥−", "grow / shrink"],
+    ["⌥I ⌥O", "move tab"],
+    ["⇧PgUp ⇧PgDn", "page scroll"],
+    ["⇪", "lock / unlock"],
+  ],
+  pane: [
+    ["h j k l", "focus"],
+    ["n", "new pane"],
+    ["d", "split down"],
+    ["c", "split right"],
+    ["x", "close"],
+    ["f", "fullscreen"],
+    ["r", "rename"],
+    ["p ;", "next / last"],
+  ],
+  tab: [
+    ["h l", "switch"],
+    ["n", "new tab"],
+    ["x", "close"],
+    ["r", "rename"],
+    ["1–9", "go to"],
+    ["⇥", "last"],
+    ["b [ ]", "break pane out"],
+  ],
+  resize: [
+    ["h j k l", "move border"],
+    ["= −", "grow / shrink"],
+  ],
+  move: [
+    ["h j k l", "swap"],
+    ["n p", "next / previous"],
+  ],
+  scroll: [
+    ["j k", "line"],
+    ["d u", "half page"],
+    ["h l", "page"],
+    ["[ ]", "turn"],
+    ["s", "find"],
+    ["⌃C", "bottom"],
+  ],
+  session: [
+    ["w", "threads"],
+    ["c", "settings"],
+  ],
 };
 
 function sameShortcut(a: KeybindingShortcut, b: KeybindingShortcut): boolean {

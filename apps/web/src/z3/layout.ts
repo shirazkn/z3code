@@ -278,8 +278,27 @@ function moveBoundary(split: Split, index: number, other: number, delta: number)
   return { ...split, sizes };
 }
 
-/** Zellij's `Resize "Increase|Decrease <direction>"`: moves the pane's edge on that side. */
-export function resizePane(tab: Tab, leafId: string, direction: Direction, grow: boolean): Tab {
+/**
+ * Moves the pane's border toward `direction`: its right (bottom) border when it has one, else its
+ * left (top) border. Opposite directions undo each other, as a dragged divider does.
+ */
+export function nudgeBorder(tab: Tab, leafId: string, direction: Direction): Tab {
+  const axis: Axis = direction === "left" || direction === "right" ? "row" : "column";
+  const delta = direction === "right" || direction === "down" ? RESIZE_STEP : -RESIZE_STEP;
+  const path = pathTo(tab.root, leafId) ?? [];
+  for (const [split, index] of [...path].reverse()) {
+    if (split.axis !== axis) continue;
+    const next =
+      index + 1 < split.children.length
+        ? moveBoundary(split, index, index + 1, delta)
+        : moveBoundary(split, index - 1, index, delta);
+    return next === null ? tab : { ...tab, root: replaceSplit(tab.root, next) };
+  }
+  return tab;
+}
+
+/** Moves the pane's edge on `direction` outward (`grow`) or inward. */
+function resizePane(tab: Tab, leafId: string, direction: Direction, grow: boolean): Tab {
   const axis: Axis = direction === "left" || direction === "right" ? "row" : "column";
   const before = direction === "left" || direction === "up";
   const path = pathTo(tab.root, leafId) ?? [];

@@ -28,7 +28,7 @@ import {
   movePane,
   neighbor,
   placeNewPane,
-  resizePane,
+  nudgeBorder,
   resizePaneAll,
   splitPane,
   stepTab,
@@ -212,10 +212,12 @@ export function runAction(action: Action): boolean {
       commit(next);
       return true;
     }
+    case "nudge":
     case "resize": {
-      const next = action.dir
-        ? resizePane(tab, focused, action.dir, action.grow)
-        : resizePaneAll(tab, focused, action.grow);
+      const next =
+        action.do === "nudge"
+          ? nudgeBorder(tab, focused, action.dir)
+          : resizePaneAll(tab, focused, action.grow);
       if (next === tab) return false;
       useZ3Store.setState({ layout: updateTab(layout, tab.id, () => next) });
       return true;
@@ -282,9 +284,4 @@ export function focusPaneById(leafId: string): void {
   if (tab.focusedPaneId === leafId) return;
   commit(updateTab(layout, tab.id, (t) => focusPane(t, leafId)));
   useZ3Store.setState({ focusRequest: null });
-}
-
-export function activateTabById(tabId: string): void {
-  const { layout } = useZ3Store.getState();
-  commit(activateTab(layout, tabId));
 }
