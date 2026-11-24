@@ -55,4 +55,5 @@ Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Sh
   - `vite.config.ts`: `apps/web/src/z3/**` is exempt from the translation lint.
   - `components/ChatView.browser.test.tsx`: its stash and right-panel chords moved off the mode keys.
   - `components/settings/KeybindingsSettings.tsx`: the Zellij modes section.
+  - `components/sidebar/SidebarChrome.tsx`: the Z3 wordmark (`z3/Z3Wordmark.tsx`) in place of T3's.
 - Update: `git fetch upstream --tags && git rebase --onto <new tag> v0.1.11 main`, then run `vp run typecheck` in `apps/web` and `vp test run src/z3` (unit and browser). Keep the base tag equal to the server version you pair with.
