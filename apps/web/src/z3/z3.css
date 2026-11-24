@@ -50,16 +50,20 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   height: var(--z3-bar);
 }
 
-/* Dark themes: the chat area's background runs to true black at its four edges, the tab bar's
-   top included. The panes' own backgrounds give way, so one fade spans the tab bar and every pane. */
+/* Dark themes: the chat area's background drops to true black at the screen's edges, the tab
+   bar's top included. The panes' own backgrounds give way, so one fade spans every pane. The
+   left edge fades only with the sidebar collapsed; an open sidebar is not a screen edge. */
 .dark [data-z3-host] {
+  --z3-edge: black, rgb(0 0 0 / 0.3) 0.5rem, transparent 1.25rem;
+  --z3-edge-left: linear-gradient(to right, transparent, transparent);
   background-image:
-    linear-gradient(to bottom, black, rgb(0 0 0 / 0.45) 1.25rem, transparent 3.5rem),
-    linear-gradient(to right, black, rgb(0 0 0 / 0.45) 1.5rem, transparent 4.5rem),
-    linear-gradient(to left, black, rgb(0 0 0 / 0.45) 1.5rem, transparent 4.5rem),
-    linear-gradient(to top, black, rgb(0 0 0 / 0.45) 1.5rem, transparent 4.5rem),
-    var(--surface-grain);
+    linear-gradient(to bottom, var(--z3-edge)), linear-gradient(to left, var(--z3-edge)),
+    linear-gradient(to top, var(--z3-edge)), var(--z3-edge-left), var(--surface-grain);
   background-size: auto, auto, auto, auto, var(--surface-grain-size);
+}
+
+.dark [data-sidebar-state="collapsed"] [data-z3-host] {
+  --z3-edge-left: linear-gradient(to right, var(--z3-edge));
 }
 
 .dark [data-z3-cell] > [data-slot="sidebar-inset"],

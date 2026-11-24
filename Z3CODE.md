@@ -21,7 +21,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - With the sidebar collapsed the tab bar stays 28 px, except beside the macOS window buttons (a window that is not full screen).
 - The first launch sets the glass opacity to 50%.
 - A pane whose Claude thread published or read an artifact shows a window icon in its title bar. A click opens the newest artifact in the Browser panel, in a browser profile of the thread's provider account (added on first use, with its own cookies); sign in to claude.ai once per profile. Without a Browser panel the link opens in a new window.
-- In dark mode the chat area's background fades to true black at its four edges, the top of the tab bar included.
+- In dark mode the chat area's background drops to true black over its last 20 px at the screen's edges, the top of the tab bar included. The left edge does so only with the sidebar collapsed.
 - The four tabs shown last stay loaded, so a switch back does not load the threads again.
 - The tab bar is the top row. Tabs are named Tab 1, Tab 2… until you rename them (double-click, or Cmd+T r); hover shows a close button; + opens a tab. While a mode is on, the bar's right end names it and lists its keys; Locked shows while the lock is on.
 - Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only.
