@@ -595,6 +595,8 @@ export default defineConfig({
           "**/{test-fixtures,*TestFixtures}.ts",
           "apps/mobile/src/features/development/**",
           "packages/client-runtime/src/rpc/**",
+          // z3 fork copy stays English.
+          "apps/web/src/z3/**",
         ],
         rules: { "t3code/no-untranslated-copy": "error" },
       },

@@ -8,6 +8,7 @@ import type { ClientSettings } from "@t3tools/contracts/settings";
 import { createBrowserHistory, createHashHistory } from "@tanstack/react-router";
 import * as Schema from "effect/Schema";
 
+import { adoptZ3Theme } from "./z3/theme";
 import { applyAppearanceContrast } from "./appearanceContrast";
 import { applyAppearanceFontVariables, TYPOGRAPHY_ADVANCED_STORAGE_KEY } from "./appearanceFonts";
 import { startElectronBrowserHost } from "./browser/ElectronBrowserHost";
@@ -275,6 +276,7 @@ export function startAppServices(): AppRouter {
   startEnvironmentThemeRepaint();
   startThemeBackground();
   startBrowserChromeThemeSync(router);
+  adoptZ3Theme();
   startDefaultThemeAdoption();
   startModelPreferencesMigration();
   startAgentOpenedPreviews();

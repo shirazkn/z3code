@@ -18,6 +18,7 @@ import { createServerEnvironmentAtoms } from "@t3tools/client-runtime/state/serv
 import { createOutdatedServerUpdateCommand } from "@t3tools/client-runtime/state/outdatedServerUpdate";
 import { createEnvironmentServerConfigsAtom } from "@t3tools/client-runtime/state/shell";
 import { mergeWithDefaultKeybindings } from "@t3tools/shared/keybindings";
+import { remapStockKeys } from "../z3/keymap";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";
 
@@ -158,11 +159,14 @@ const environmentConnectionsAtom = Atom.make((get) => {
   return environments;
 });
 
-export const primaryServerKeybindingsAtom = createShortcutKeybindingsAtom({
-  primaryEnvironmentIdAtom,
-  primaryConfigAtom: primaryServerConfigAtom,
-  environmentsAtom: environmentConnectionsAtom,
-}).pipe(Atom.withLabel("web-primary-server-keybindings"));
+export const primaryServerKeybindingsAtom = Atom.map(
+  createShortcutKeybindingsAtom({
+    primaryEnvironmentIdAtom,
+    primaryConfigAtom: primaryServerConfigAtom,
+    environmentsAtom: environmentConnectionsAtom,
+  }),
+  remapStockKeys,
+).pipe(Atom.withLabel("web-primary-server-keybindings"));
 
 const EMPTY_ENVIRONMENT_THEMES: ReadonlyArray<EnvironmentTheme> = [];
 

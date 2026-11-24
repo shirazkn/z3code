@@ -276,7 +276,7 @@ it("a machine chip stashed in one thread restores with its machine in another", 
   const editor = page.getByTestId("composer-editor");
   const pressStashShortcut = async () => {
     await userEvent.click(editor);
-    await userEvent.keyboard("{ControlOrMeta>}s{/ControlOrMeta}");
+    await userEvent.keyboard("{ControlOrMeta>}{Alt>}s{/Alt}{/ControlOrMeta}");
   };
   await vi.waitFor(() => expect(editor.element().textContent).toContain("Deploy on"));
   // A draft can't stash until the shell snapshot lists its project.
@@ -552,9 +552,9 @@ it("a stashed prompt ending in a file chip restores with the chip", async () => 
 
   const editor = page.getByTestId("composer-editor");
   await userEvent.click(editor);
-  await userEvent.keyboard("{ControlOrMeta>}s{/ControlOrMeta}");
+  await userEvent.keyboard("{ControlOrMeta>}{Alt>}s{/Alt}{/ControlOrMeta}");
   await expect.element(chip).not.toBeInTheDocument();
-  await userEvent.keyboard("{ControlOrMeta>}s{/ControlOrMeta}");
+  await userEvent.keyboard("{ControlOrMeta>}{Alt>}s{/Alt}{/ControlOrMeta}");
 
   await vi.waitFor(() => expect(editor.element().textContent).toContain("Check"));
   expect(editor.element().textContent).not.toContain("[package.json](package.json)");
@@ -729,8 +729,8 @@ it("a shortcut conditioned on rightPanelOpen sees the thread's open right panel"
   using _environment = installFakeEnvironment([thread], {
     keybindings: mergeWithDefaultKeybindings(
       compileResolvedKeybindingsConfig([
-        { key: "ctrl+t", command: "rightPanel.new", when: "rightPanelOpen && !terminalFocus" },
-        { key: "ctrl+t", command: "rightPanel.toggle", when: "!rightPanelOpen" },
+        { key: "ctrl+alt+t", command: "rightPanel.new", when: "rightPanelOpen && !terminalFocus" },
+        { key: "ctrl+alt+t", command: "rightPanel.toggle", when: "!rightPanelOpen" },
       ]),
     ),
   });
@@ -752,7 +752,7 @@ it("a shortcut conditioned on rightPanelOpen sees the thread's open right panel"
   await toggle.click();
   await page.getByRole("button", { name: /^Files/ }).click();
   await composer.click();
-  await userEvent.keyboard("{Control>}t{/Control}");
+  await userEvent.keyboard("{Control>}{Alt>}t{/Alt}{/Control}");
   await expect.element(page.getByRole("menuitem", { name: /Files/ })).toBeVisible();
   await expect.element(toggle).toHaveAttribute("aria-pressed", "true");
 });

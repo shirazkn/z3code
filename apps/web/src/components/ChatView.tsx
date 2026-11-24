@@ -1904,8 +1904,11 @@ export default function ChatView(props: ChatViewProps) {
   const onInterruptStable = useStableCallback(onInterrupt);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- window listener for the desktop snapshot event that focuses the composer
   useEffect(
-    () => (embedded ? undefined : subscribeSnapShotComposerFocus(focusComposerStable)),
-    [embedded, focusComposerStable],
+    () =>
+      embedded || backgroundThread
+        ? undefined
+        : subscribeSnapShotComposerFocus(focusComposerStable),
+    [backgroundThread, embedded, focusComposerStable],
   );
   const insertArtifactTemplate = (template: CodexArtifactTemplate) => {
     const composer = composerRef.current;
@@ -2194,7 +2197,7 @@ export default function ChatView(props: ChatViewProps) {
   useFocusComposerOnThreadOpen(
     activeThreadRef,
     workspaceLayoutElement,
-    !embedded,
+    !embedded && !backgroundThread,
     terminalUiState.terminalOpen,
     isCoarsePointer ? ignoreComposerFocus : focusComposerStable,
   );
@@ -2203,6 +2206,7 @@ export default function ChatView(props: ChatViewProps) {
   useEffect(() => {
     if (
       embedded ||
+      backgroundThread ||
       !activeThread?.id ||
       terminalUiState.terminalOpen ||
       isMobileViewport ||
@@ -2234,6 +2238,7 @@ export default function ChatView(props: ChatViewProps) {
     };
   }, [
     activeThread?.id,
+    backgroundThread,
     embedded,
     focusComposerStable,
     isCoarsePointer,
@@ -2867,7 +2872,7 @@ export default function ChatView(props: ChatViewProps) {
     closeActiveRightPanelSurfaceStable,
   ]);
 
-  usePasteToFocusComposer(embedded ? null : activeThreadId, composerRef);
+  usePasteToFocusComposer(embedded || backgroundThread ? null : activeThreadId, composerRef);
   // A delegated task is a remote thread's subagent.
   const isSubagentThread =
     activeThread?.lineage.relationshipToParent === "subagent" || delegatedFrom !== null;

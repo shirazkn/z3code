@@ -62,6 +62,7 @@ import {
   workEntryIconName,
 } from "./TimelineWorkEntryRow.logic";
 import { formatWorkingTimerNow } from "./TimelineWorkGroupRows.logic";
+import { Z3Working } from "../../z3/Working";
 
 export const WorkGroupSection = memo(function WorkGroupSection({
   anchorKey,
@@ -357,12 +358,10 @@ export function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: 
     <T>Setting up worktree…</T>
   ) : compacting ? (
     <CompactingLabel createdAt={row.createdAt} />
-  ) : row.createdAt ? (
-    <T>
-      Working for <WorkingTimer createdAt={row.createdAt} />
-    </T>
   ) : (
-    <T>Working...</T>
+    <Z3Working seed={row.createdAt}>
+      {row.createdAt ? <WorkingTimer createdAt={row.createdAt} /> : null}
+    </Z3Working>
   );
   return (
     <div className="border-b border-border/60 pb-2 pt-1">

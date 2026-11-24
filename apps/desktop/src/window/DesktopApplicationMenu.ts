@@ -232,7 +232,11 @@ export const make = Effect.gen(function* () {
           { type: "separator" },
           { role: "services", label: m(msg("Services", { $context: "macOS app menu item" })) },
           { type: "separator" },
-          { role: "hide", label: m(msg("Hide {appName}"), { appName: environment.displayName }) },
+          // z3: no Cmd+H accelerator, so the chord reaches the page as Zellij's move mode.
+          {
+            label: m(msg("Hide {appName}"), { appName: environment.displayName }),
+            click: () => Electron.app.hide(),
+          },
           { role: "hideOthers", label: m(msg("Hide Others")) },
           {
             role: "unhide",

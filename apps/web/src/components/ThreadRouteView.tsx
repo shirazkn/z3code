@@ -54,9 +54,12 @@ function useOpenThreadFamily(threadRef: ScopedThreadRef | null, missing: boolean
 export function ThreadRouteView({
   target,
   background = false,
+  passive = false,
 }: {
   target: ThreadRouteTarget;
   background?: boolean;
+  /** A z3 pane without focus: a background thread that leaves the route alone. */
+  passive?: boolean;
 }) {
   const navigate = useNavigate();
   const draftId = target.kind === "draft" ? target.draftId : null;
@@ -148,11 +151,19 @@ export function ThreadRouteView({
     if (renderState === "missing") {
       const { clearPendingFileDropsForThread } = useSidebarPendingFileDropStore.getState();
       clearPendingFileDropsForThread(target.threadRef);
-      if (environmentHasAnyThreads && !background) {
+      if (environmentHasAnyThreads && !background && !passive) {
         void navigate({ to: "/", replace: true });
       }
     }
-  }, [background, bootstrapComplete, environmentHasAnyThreads, navigate, renderState, target]);
+  }, [
+    background,
+    bootstrapComplete,
+    environmentHasAnyThreads,
+    navigate,
+    passive,
+    renderState,
+    target,
+  ]);
 
   let view: React.ReactNode = null;
   let redirect: React.ReactNode = null;
@@ -229,10 +240,10 @@ export function ThreadRouteView({
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
       inert={background}
     >
-      <BackgroundThreadContext value={background}>
+      <BackgroundThreadContext value={background || passive}>
         <HiddenThreadContext value={background}>{view}</HiddenThreadContext>
       </BackgroundThreadContext>
-      {background ? null : redirect}
+      {background || passive ? null : redirect}
     </SidebarInset>
   );
 }

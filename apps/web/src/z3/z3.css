@@ -1,0 +1,139 @@
+/* Kanagawa, from the dotfiles' work zellij theme (kanagawa.kdl). The bar keeps these colors in
+   both appearances, as zellij's does under Ghostty's light and dark themes. */
+[data-z3-host] {
+  --z3-bg: #1f1f28;
+  --z3-fg: #e8dfbe;
+  --z3-green: #86a874;
+  --z3-orange: #ffa066;
+  --z3-magenta: #957fb8;
+  --z3-gray: #54546d;
+  --z3-font: "IosevkaTermSlab NFM", "Iosevka Term Slab", "Iosevka Term", ui-monospace, monospace;
+}
+
+/* Each pane renders the stock inset, which sizes itself to the viewport. */
+[data-z3-cell] > [data-slot="sidebar-inset"] {
+  height: 100%;
+}
+
+[data-z3-cell][data-multi]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--z3-gray) 70%, transparent);
+}
+
+[data-z3-cell][data-multi][data-focused]::after {
+  box-shadow: inset 0 0 0 1px var(--z3-green);
+}
+
+[data-z3-empty] {
+  margin: auto;
+  font-family: var(--z3-font);
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}
+
+[data-z3-bar] {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  height: 22px;
+  padding: 0 6px;
+  overflow: hidden;
+  background: var(--z3-bg);
+  color: var(--z3-fg);
+  font-family: var(--z3-font);
+  font-size: 12px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+[data-z3-mode-label] {
+  padding-right: 8px;
+  font-weight: 700;
+  color: var(--z3-orange);
+}
+
+[data-z3-bar][data-mode="normal"] [data-z3-mode-label] {
+  color: var(--z3-green);
+}
+
+[data-z3-bar][data-mode="locked"] [data-z3-mode-label] {
+  color: var(--z3-magenta);
+}
+
+/* zellij's powerline ribbons, drawn so they need no glyph font. */
+[data-z3-ribbon] {
+  height: 18px;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  outline: 0;
+  background: var(--z3-fg);
+  color: var(--z3-bg);
+  font: inherit;
+  line-height: 18px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%);
+  cursor: default;
+}
+
+[data-z3-ribbon][data-active] {
+  background: var(--z3-green);
+  font-weight: 700;
+}
+
+input[data-z3-ribbon] {
+  width: 14ch;
+  cursor: text;
+}
+
+[data-z3-hints] {
+  margin-left: auto;
+  padding-left: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--z3-fg) 60%, transparent);
+}
+
+/* Claude Code's glyph spinner, on the stock working row. */
+[data-z3-spin]::before {
+  display: inline-block;
+  width: 1.2em;
+  content: "✻";
+  color: #a64e38;
+  animation: z3-spin 1.2s steps(1) infinite;
+}
+
+.dark [data-z3-spin]::before {
+  color: #d9a95c;
+}
+
+@keyframes z3-spin {
+  0% {
+    content: "·";
+  }
+  16% {
+    content: "✢";
+  }
+  33% {
+    content: "✳";
+  }
+  50% {
+    content: "✶";
+  }
+  66% {
+    content: "✻";
+  }
+  83% {
+    content: "✽";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-z3-spin]::before {
+    animation: none;
+  }
+}
