@@ -7,6 +7,7 @@ import { COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS } from "../workspaceTitlebar";
 import { activateTabById, closeTabById, renameActiveTab, runAction } from "./actions";
 import { MODE_HINTS, type Mode } from "./keymap";
 import type { Layout, Tab } from "./layout";
+import { tabDropProps, tabLabel } from "./SidebarTabs";
 import { setMode, useZ3Store } from "./store";
 
 const MODE_NAME: Partial<Record<Mode, string>> = {
@@ -46,11 +47,11 @@ const CAPS_TRIM = "[text-box:trim-both_cap_alphabetic]";
 
 function TabItem({ tab, index, active }: { tab: Tab; index: number; active: boolean }) {
   const renaming = useZ3Store((state) => active && state.mode === "renameTab");
-  // Zellij's default tab name.
-  const label = tab.name ?? `Tab ${index + 1}`;
+  const label = tabLabel(tab.name, index);
   return (
     <div
       data-active-tab={active}
+      {...tabDropProps(tab.id)}
       className={cn(
         "group/tab relative flex h-5 min-w-14 max-w-40 shrink items-center rounded-md px-4",
         isElectron && "[-webkit-app-region:no-drag]",
@@ -115,7 +116,7 @@ export function TabStrip({ layout }: { layout: Layout }) {
     <div
       data-z3-tabs
       className={cn(
-        "flex shrink-0 items-center gap-1 border-b pe-3 ps-2 text-2xs",
+        "relative flex shrink-0 items-center gap-1 pe-3 ps-2 text-2xs",
         isElectron && "drag-region",
         COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS,
       )}
@@ -128,6 +129,7 @@ export function TabStrip({ layout }: { layout: Layout }) {
       <button
         type="button"
         aria-label="New tab"
+        {...tabDropProps("new")}
         className={cn(
           "flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
           isElectron && "[-webkit-app-region:no-drag]",

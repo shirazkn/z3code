@@ -392,6 +392,7 @@ function swapLayouts(panes: ReadonlyArray<Leaf>): PaneNode[] {
 
 /** Zellij's NextSwapLayout and PreviousSwapLayout, keeping the panes in order. */
 export function swapLayout(tab: Tab, step: 1 | -1): Tab {
+  if (!isSplit(tab.root)) return tab;
   const layouts = swapLayouts(leaves(tab.root));
   if (layouts.length < 2) return tab;
   const current = layouts.findIndex((node) => shapeOf(node) === shapeOf(tab.root));
@@ -470,8 +471,8 @@ export function breakPane(layout: Layout, to: "new" | "left" | "right"): Layout 
   return { ...next, activeTabId: dest.id, lastTabId: remaining === null ? null : source.id };
 }
 
-/** Where every leaf showing `key` lives. */
-function findTarget(layout: Layout, key: string): { tabId: string; leafId: string } | null {
+/** The pane that shows `key`; the active tab's pane wins. */
+export function findTarget(layout: Layout, key: string): { tabId: string; leafId: string } | null {
   const ordered = [activeTab(layout), ...layout.tabs.filter((t) => t.id !== layout.activeTabId)];
   for (const tab of ordered) {
     const match = leaves(tab.root).find(
@@ -505,27 +506,168 @@ export function followRoute(layout: Layout, target: ThreadRouteTarget): Layout {
   }));
 }
 
+export interface TabGroup {
+  readonly id: string;
+  readonly name: string | null;
+  readonly active: boolean;
+  /** The tab's panes in reading order; `focused` marks the pane the keyboard is in. */
+  readonly panes: ReadonlyArray<Leaf & { readonly focused: boolean }>;
+}
+
+/** The sidebar's view of the layout: each tab and the threads its panes show. */
+export function tabGroups(layout: Layout): TabGroup[] {
+  const active = activeTab(layout);
+  return layout.tabs.map((tab) => ({
+    id: tab.id,
+    name: tab.name,
+    active: tab.id === active.id,
+    panes: leaves(tab.root).map((leaf) => ({
+      ...leaf,
+      focused: tab.id === active.id && leaf.id === tab.focusedPaneId,
+    })),
+  }));
+}
+
+const KEPT_TABS = 4;
+
+/** The tabs to keep mounted: `active`, then the tabs shown before it, `KEPT_TABS` at most. */
+export function keepRecent(
+  recent: ReadonlyArray<string>,
+  active: string,
+  tabs: ReadonlyArray<Tab>,
+): ReadonlyArray<string> {
+  const next = [active, ...recent.filter((id) => id !== active)]
+    .filter((id) => tabs.some((tab) => tab.id === id))
+    .slice(0, KEPT_TABS);
+  return next.length === recent.length && next.every((id, index) => id === recent[index])
+    ? recent
+    : next;
+}
+
+const isEmptyLeaf = (leaf: Leaf) => leaf.target === null;
+
+/**
+ * Shows `target` in tab `dest` (`"new"` opens a tab) and goes there: its pane moves, and a blank
+ * pane of `dest` takes it before a split. A tab left with no pane closes.
+ */
+export function placeTarget(
+  layout: Layout,
+  target: ThreadRouteTarget,
+  dest: string,
+  grid: Size,
+  isBlank: (leaf: Leaf) => boolean = isEmptyLeaf,
+): Layout {
+  const shown = findTarget(layout, targetKey(target));
+  const source = shown === null ? null : layout.tabs.find((tab) => tab.id === shown.tabId)!;
+  const alone = source !== null && !isSplit(source.root);
+  if (shown !== null && (shown.tabId === dest || (dest === "new" && alone))) {
+    return updateTab(activateTab(layout, shown.tabId), shown.tabId, (tab) => ({
+      ...focusPane(tab, shown.leafId),
+      fullscreen: false,
+    }));
+  }
+  if (dest !== "new" && !layout.tabs.some((tab) => tab.id === dest)) return layout;
+  let tabs = layout.tabs;
+  if (shown !== null && source !== null) {
+    const remaining = closePane(source, shown.leafId);
+    tabs =
+      remaining === null
+        ? tabs.filter((tab) => tab.id !== source.id)
+        : tabs.map((tab) => (tab.id === source.id ? remaining : tab));
+  }
+  let destId = dest;
+  if (dest === "new") {
+    const tab = createTab(createLeaf(target));
+    tabs = [...tabs, tab];
+    destId = tab.id;
+  } else {
+    tabs = tabs.map((tab) => {
+      if (tab.id !== dest) return tab;
+      const blank = leaves(tab.root).find(isBlank);
+      if (blank === undefined) {
+        const place = placeNewPane(tab, grid);
+        return splitPane(tab, place.leafId, place.direction, createLeaf(target));
+      }
+      const root = mapNode(tab.root, (node) =>
+        node.id === blank.id ? { ...blank, target } : node,
+      );
+      return { ...withFocus({ ...tab, root }, blank.id), fullscreen: false };
+    });
+  }
+  const kept = (tabId: string | null) => tabId !== null && tabs.some((tab) => tab.id === tabId);
+  const previous = layout.activeTabId === destId ? layout.lastTabId : layout.activeTabId;
+  return { tabs, activeTabId: destId, lastTabId: kept(previous) ? previous : null };
+}
+
+/** Closes the pane that shows `key`. Its tab closes with its last pane; the last tab keeps one empty pane. */
+export function removeTarget(layout: Layout, key: string): Layout {
+  const shown = findTarget(layout, key);
+  if (shown === null) return layout;
+  const tab = layout.tabs.find((candidate) => candidate.id === shown.tabId)!;
+  const remaining = closePane(tab, shown.leafId);
+  if (remaining !== null) return updateTab(layout, tab.id, () => remaining);
+  return (
+    (layout.tabs.length > 1 ? closeTab(layout, tab.id) : null) ??
+    mapLeaves(layout, (leaf) => (leaf.id === shown.leafId ? { ...leaf, target: null } : leaf))
+  );
+}
+
+/** A thread shows in one pane: the focused pane keeps a repeated target, then the first pane. */
+export function dedupeTargets(layout: Layout): Layout {
+  const focused = focusedLeaf(layout);
+  const seen = new Set(focused?.target ? [targetKey(focused.target)] : []);
+  return mapLeaves(layout, (leaf) => {
+    if (leaf.target === null || leaf.id === focused?.id) return leaf;
+    const key = targetKey(leaf.target);
+    if (!seen.has(key)) {
+      seen.add(key);
+      return leaf;
+    }
+    return { ...leaf, target: null };
+  });
+}
+
+function isTarget(value: unknown): boolean {
+  if (value === null) return true;
+  if (typeof value !== "object") return false;
+  const target = value as ThreadRouteTarget;
+  if (target.kind === "draft") return typeof target.draftId === "string";
+  const ref = target.kind === "server" ? target.threadRef : null;
+  return typeof ref?.environmentId === "string" && typeof ref.threadId === "string";
+}
+
 /** Keeps a stored layout only when its shape is sound. */
 export function isLayout(value: unknown): value is Layout {
   if (typeof value !== "object" || value === null) return false;
   const layout = value as Layout;
   if (!Array.isArray(layout.tabs) || layout.tabs.length === 0) return false;
+  const ids = new Set<string>();
+  const isNew = (id: unknown): id is string => {
+    if (typeof id !== "string" || ids.has(id)) return false;
+    ids.add(id);
+    return true;
+  };
   const isNode = (node: unknown): boolean => {
-    if (typeof node !== "object" || node === null || typeof (node as Leaf).id !== "string") {
-      return false;
-    }
-    if (!("children" in node)) return true;
+    if (typeof node !== "object" || node === null || !isNew((node as Leaf).id)) return false;
+    if (!("children" in node)) return isTarget((node as Leaf).target);
     const split = node as Split;
     return (
       Array.isArray(split.children) &&
       split.children.length >= 2 &&
+      Array.isArray(split.sizes) &&
       split.sizes.length === split.children.length &&
+      split.sizes.every((size) => Number.isFinite(size) && size > 0) &&
       split.children.every(isNode)
     );
   };
   return (
     layout.tabs.every(
-      (tab) => isNode(tab.root) && findLeaf(tab.root, tab.focusedPaneId) !== null,
+      (tab) =>
+        typeof tab === "object" &&
+        tab !== null &&
+        isNew(tab.id) &&
+        isNode(tab.root) &&
+        findLeaf(tab.root, tab.focusedPaneId) !== null,
     ) && layout.tabs.some((tab) => tab.id === layout.activeTabId)
   );
 }

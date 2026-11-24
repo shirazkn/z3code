@@ -4,7 +4,7 @@ import type { AnyRouter } from "@tanstack/react-router";
 
 import { openThreadFind } from "../components/chat/threadFindStore";
 import { dispatchCommandPalette } from "../commandPaletteStore";
-import { useComposerDraftStore } from "../composerDraftStore";
+import { composerDraftHasUserContent, useComposerDraftStore } from "../composerDraftStore";
 import { createNewThreadHandler } from "../hooks/useHandleNewThread";
 import { readProjects, readThreadShell } from "../state/entities";
 import { buildThreadRouteParams, type ThreadRouteTarget } from "../threadRoutes";
@@ -29,6 +29,8 @@ import {
   movePane,
   neighbor,
   placeNewPane,
+  placeTarget,
+  removeTarget,
   nudgeBorder,
   resizePaneAll,
   splitPane,
@@ -306,6 +308,50 @@ export function closeTabById(tabId: string): void {
   if (next !== null) commit(next);
 }
 
+/** A pane with no thread, or with a draft that holds nothing, gives its place to a thread. */
+function isBlankLeaf(leaf: Leaf): boolean {
+  if (leaf.target === null) return true;
+  if (leaf.target.kind !== "draft") return false;
+  const drafts = useComposerDraftStore.getState();
+  return !composerDraftHasUserContent(drafts.getComposerDraft(leaf.target.draftId));
+}
+
+/** Shows the threads in tab `dest` (`"new"` opens one tab for them) and goes there. */
+export function openInTab(targets: ReadonlyArray<ThreadRouteTarget>, dest: string): void {
+  if (creating) {
+    console.info("[z3] move ignored: a new pane's thread is being created", dest);
+    return;
+  }
+  let next = useZ3Store.getState().layout;
+  let tabId = dest;
+  for (const target of targets) {
+    next = placeTarget(next, target, tabId, gridSize(), isBlankLeaf);
+    tabId = next.activeTabId;
+  }
+  commit(next);
+}
+
+/** Closes the panes that show the threads; the threads stay in the sidebar. */
+export function removeFromTabs(targets: ReadonlyArray<ThreadRouteTarget>): void {
+  if (creating) {
+    console.info("[z3] remove ignored: a new pane's thread is being created");
+    return;
+  }
+  const { layout } = useZ3Store.getState();
+  const next = targets.reduce((result, target) => removeTarget(result, targetKey(target)), layout);
+  if (next !== layout) commit(next);
+}
+
+export function focusPaneInTab(tabId: string, leafId: string): void {
+  const { layout } = useZ3Store.getState();
+  commit(
+    updateTab(activateTab(layout, tabId), tabId, (tab) => ({
+      ...focusPane(tab, leafId),
+      fullscreen: false,
+    })),
+  );
+}
+
 /** With no pane to move to, a pane key still brings DOM focus back into the focused pane. */
 function returnFocusToPane(): boolean {
   const cell = document.querySelector("[data-z3-cell][data-focused]");
@@ -317,8 +363,10 @@ function returnFocusToPane(): boolean {
 /** A pane whose thread cannot show (deleted, archived, hidden) closes, or empties if it is alone. */
 export function dropPaneTarget(leafId: string): void {
   const { layout } = useZ3Store.getState();
-  const tab = activeTab(layout);
-  if (!leaves(tab.root).some((leaf) => leaf.id === leafId)) return;
+  const tab = layout.tabs.find((candidate) =>
+    leaves(candidate.root).some((leaf) => leaf.id === leafId),
+  );
+  if (tab === undefined) return;
   console.info("[z3] pane target unavailable; dropping it", leafId);
   const remaining = closePane(tab, leafId);
   commit(

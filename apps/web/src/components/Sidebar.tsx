@@ -273,6 +273,18 @@ import {
 } from "./sidebar/SidebarThreadRow";
 import { SidebarDraftBlock } from "./sidebar/SidebarDraftBlock";
 import {
+  isOverSidebarTabDrop,
+  isTabMenuId,
+  paneThreadKey,
+  runTabMenu,
+  SidebarTabGroup,
+  SidebarTabPaneRow,
+  SidebarUntabDrop,
+  sidebarTabRowId,
+  tabMenuItems,
+  useSidebarTabs,
+} from "../z3/SidebarTabs";
+import {
   SidebarProjectFolderHeader,
   sidebarFolderRowId,
 } from "./sidebar/SidebarProjectFolderHeader";
@@ -1058,6 +1070,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     readonly targetSection: SidebarSection | null;
     readonly contextDrag: boolean;
   } | null>(null);
+  const z3Tabs = useSidebarTabs();
   const dragSensorRef = useRef<SidebarPointerSensor | null>(null);
   const contextDragKeyRef = useRef<string | null>(null);
   const dragScrollRef = useRef<{ readonly viewport: Element; readonly top: number } | null>(null);
@@ -1736,6 +1749,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
   // Folder rows only drag out to the composer; folders own their order, so nothing drops in the list.
   const isContextDrag =
     projectFolders !== null ||
+    (dragState !== null && z3Tabs.tabOf.has(dragState.activeKey)) ||
     dragState?.contextDrag === true ||
     dragState?.activeSection === "working";
   const dragTargetSection = isContextDrag ? null : (dragState?.targetSection ?? null);
@@ -1768,6 +1782,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
   const pointerOutsideThreadList = (point: { x: number; y: number }) => {
     // Search results replace the thread list, so only one of them is mounted.
     const bounds = (threadListRef.current ?? searchResultsListRef.current)?.getBoundingClientRect();
+    if (isOverSidebarTabDrop(point)) return true;
     return bounds !== undefined && (point.x < bounds.left || point.x > bounds.right);
   };
   // The path out of the list often crosses dnd-kit's edge zone, which autoscrolls the sidebar.
@@ -1944,15 +1959,25 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
         event.activatorEvent instanceof PointerEvent ? event.activatorEvent.clientY : null,
     });
   };
+  // z3: rows of threads in tabs; a collapsed shelf leaves its threads out of threadByKey.
+  const z3ThreadByKey = new Map(
+    z3Tabs.tabOf.size === 0
+      ? []
+      : searchableThreads.flatMap((thread) => {
+          const key = threadShellKey(thread);
+          return z3Tabs.tabOf.has(key) ? [[key, thread] as const] : [];
+        }),
+  );
   const hasProjectFolders = projectFolders !== null && projectFolders.length > 0;
   const sidebarListItemsFresh = ((): readonly SidebarListItem[] => {
     const rowsOf = (
       list: readonly EnvironmentThreadShell[],
       section: SidebarSection,
     ): SidebarListItem[] =>
-      list.map((thread) => {
+      list.flatMap((thread) => {
         const key = scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id));
-        return { kind: "thread", key, section };
+        // z3: a thread in a tab shows under its tab.
+        return z3Tabs.tabOf.has(key) ? [] : [{ kind: "thread", key, section }];
       });
     // Boring mode keeps a pinned open project or one the user filtered to, so it can start a thread.
     if (
@@ -2004,11 +2029,12 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
   useEffect(() => {
     if (
       dragState !== null &&
+      !z3Tabs.tabOf.has(dragState.activeKey) &&
       !sidebarListItems.some((item) => item.kind === "thread" && item.key === dragState.activeKey)
     ) {
       cancelThreadDrag();
     }
-  }, [cancelThreadDrag, dragState, sidebarListItems]);
+  }, [cancelThreadDrag, dragState, sidebarListItems, z3Tabs.tabOf]);
   // Only order, section, or draft changes need layout reads and motion.
   const listMotionLayoutKey = [
     sidebarListItemsKey,
@@ -2659,46 +2685,53 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
           ) ?? null;
         const clicked = await settlePromise(() =>
           api.contextMenu.show(
-            buildThreadActionMenuItems({
-              canOperate: readEnvironmentScope(
-                threadRef.environmentId,
-                AuthOrchestrationOperateScope,
-              ),
-              branch: thread.branch ?? null,
-              // An archived project is not a filter choice.
-              projectFilter:
-                threadProjectGroup && !threadProjectGroup.archived
-                  ? {
-                      label: threadProjectGroup.displayName,
-                      isActive: projectScopeKeys.includes(threadProjectGroup.projectKey),
-                    }
-                  : null,
-              isPinned,
-              isSettled,
-              autoSettleEnabled: thread.autoSettleDisabledAt == null,
-              isSnoozed,
-              canSnoozeNow: canSnooze(thread, { now: new Date().toISOString() }),
-              isRegeneratingTitle,
-              isRunning: !threadRuntimeCanArchive(thread.runtime),
-              canShareWithGuest: appAtomRegistry.get(
-                canShareWithGuestAtom(threadRef.environmentId),
-              ),
-              canTurnIntoProject: canTurnThreadIntoProject(threadRef),
-              canRename: !fromSearch,
-              supports: {
-                settlement: configLoaded,
-                autoSettleOptOut: supportsAutoSettleOptOut,
-                snooze: configLoaded,
-                pinning: configLoaded,
-                titleRegeneration: configLoaded,
-              },
-              snoozePresets,
-            }),
+            [
+              ...tabMenuItems(threadRef, z3Tabs),
+              ...buildThreadActionMenuItems({
+                canOperate: readEnvironmentScope(
+                  threadRef.environmentId,
+                  AuthOrchestrationOperateScope,
+                ),
+                branch: thread.branch ?? null,
+                // An archived project is not a filter choice.
+                projectFilter:
+                  threadProjectGroup && !threadProjectGroup.archived
+                    ? {
+                        label: threadProjectGroup.displayName,
+                        isActive: projectScopeKeys.includes(threadProjectGroup.projectKey),
+                      }
+                    : null,
+                isPinned,
+                isSettled,
+                autoSettleEnabled: thread.autoSettleDisabledAt == null,
+                isSnoozed,
+                canSnoozeNow: canSnooze(thread, { now: new Date().toISOString() }),
+                isRegeneratingTitle,
+                isRunning: !threadRuntimeCanArchive(thread.runtime),
+                canShareWithGuest: appAtomRegistry.get(
+                  canShareWithGuestAtom(threadRef.environmentId),
+                ),
+                canTurnIntoProject: canTurnThreadIntoProject(threadRef),
+                canRename: !fromSearch,
+                supports: {
+                  settlement: configLoaded,
+                  autoSettleOptOut: supportsAutoSettleOptOut,
+                  snooze: configLoaded,
+                  pinning: configLoaded,
+                  titleRegeneration: configLoaded,
+                },
+                snoozePresets,
+              }),
+            ],
             position,
             source,
           ),
         );
         if (clicked._tag === "Failure" || clicked.value === null) return;
+        if (isTabMenuId(clicked.value)) {
+          runTabMenu(clicked.value, threadRef);
+          return;
+        }
         if (threadActionRequiresOperate(clicked.value) && !checkThreadOperations([thread])) return;
         if (clicked.value?.startsWith("snooze:")) {
           const preset =
@@ -3531,7 +3564,29 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                         );
                       };
                       const from = isContextDrag ? null : (dragState?.activeSection ?? null);
+                      const z3TabItems = z3Tabs.tabs.map((tab) => (
+                        <SidebarTabGroup key={sidebarTabRowId(tab.id)} tab={tab}>
+                          {tab.panes.map((pane) => {
+                            const key = paneThreadKey(pane.target);
+                            const thread = key === null ? undefined : z3ThreadByKey.get(key);
+                            return thread === undefined ? (
+                              <SidebarTabPaneRow key={pane.id} tab={tab} pane={pane} />
+                            ) : (
+                              renderThreadRow(
+                                thread,
+                                sectionByThreadKey.get(key!) ?? "active",
+                                sidebarTabRowId(tab.id),
+                              )
+                            );
+                          })}
+                        </SidebarTabGroup>
+                      ));
                       const items: ReactNode[] = [
+                        ...z3TabItems,
+                        <SidebarUntabDrop
+                          key="z3-untab"
+                          active={dragState !== null && z3Tabs.tabOf.has(dragState.activeKey)}
+                        />,
                         <SidebarDraftBlock
                           key="draft-sessions"
                           projectByKey={projectByKey}
@@ -3563,6 +3618,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                               />,
                             );
                             for (const thread of folder.threads) {
+                              if (z3Tabs.tabOf.has(threadShellKey(thread))) continue;
                               items.push(
                                 renderThreadRow(
                                   thread,

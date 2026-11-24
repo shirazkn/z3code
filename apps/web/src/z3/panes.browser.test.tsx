@@ -38,7 +38,7 @@ vi.mock(import("~/lib/t3ProjectFileDefaults"), () => ({
   readT3ProjectFile: () => Promise.resolve(null),
 }));
 
-function setup(threads: ReadonlyArray<FakeThread>) {
+function setup(threads: ReadonlyArray<FakeThread>, boringSidebarEnabled = false) {
   useZ3Store.setState({
     layout: createLayout(null),
     routeKey: null,
@@ -53,6 +53,7 @@ function setup(threads: ReadonlyArray<FakeThread>) {
   });
   __setClientSettingsForTests({
     ...DEFAULT_CLIENT_SETTINGS,
+    boringSidebarEnabled,
     onboardingCompletedAt: "2026-01-01T00:00:00.000Z",
   });
   return installFakeEnvironment(threads);

@@ -8,7 +8,15 @@ import {
   useComposerDraftStore,
 } from "../composerDraftStore";
 import type { Mode } from "./keymap";
-import { createLayout, isLayout, isMulti, leaves, mapLeaves, type Layout } from "./layout";
+import {
+  createLayout,
+  dedupeTargets,
+  isLayout,
+  isMulti,
+  leaves,
+  mapLeaves,
+  type Layout,
+} from "./layout";
 
 interface Z3State {
   readonly layout: Layout;
@@ -33,7 +41,9 @@ export const useZ3Store = create<Z3State>()(
       partialize: (state) => ({ layout: state.layout }),
       merge: (persisted, current) => {
         const layout = (persisted as { layout?: unknown } | undefined)?.layout;
-        return isLayout(layout) ? { ...current, layout } : current;
+        if (isLayout(layout)) return { ...current, layout: dedupeTargets(layout) };
+        if (layout !== undefined) console.warn("[z3] stored layout is unsound; starting fresh");
+        return current;
       },
     },
   ),

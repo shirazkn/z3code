@@ -10,18 +10,31 @@ import {
   createLayout,
   createLeaf,
   createTab,
+  dedupeTargets,
+  findTarget,
+  focusedLeaf,
   followRoute,
   isLayout,
+  isSplit,
+  keepRecent,
   leaves,
+  moveTab,
   movePane,
   neighbor,
   placeNewPane,
+  placeTarget,
   rects,
+  removeTarget,
   nudgeBorder,
   splitPane,
   shapeOf,
+  stepTab,
   swapLayout,
+  tabGroups,
+  targetKey,
+  updateTab,
   type Layout,
+  type PaneNode,
   type Tab,
 } from "./layout";
 
@@ -162,6 +175,256 @@ describe("isLayout", () => {
   });
 });
 
+describe("isLayout", () => {
+  it("rejects repeated ids, bad sizes and targets that are not thread routes", () => {
+    const { tab } = threePanes();
+    const layout: Layout = { tabs: [tab], activeTabId: tab.id, lastTabId: null };
+    const stored = JSON.parse(JSON.stringify(layout)) as Layout;
+    expect(isLayout(stored)).toBe(true);
+    const root = stored.tabs[0]!.root as Extract<PaneNode, { children: unknown }>;
+    const withRoot = (next: unknown) => ({ ...stored, tabs: [{ ...stored.tabs[0]!, root: next }] });
+    expect(isLayout(withRoot({ ...root, sizes: [0.5, Number.NaN] }))).toBe(false);
+    expect(isLayout(withRoot({ ...root, sizes: [1, 0] }))).toBe(false);
+    expect(isLayout(withRoot({ ...root, children: [root.children[0], root.children[0]] }))).toBe(
+      false,
+    );
+    const first = root.children[0]!;
+    for (const target of [{ kind: "server" }, { kind: "draft" }, "thread", undefined]) {
+      expect(
+        isLayout(withRoot({ ...root, children: [{ ...first, target }, root.children[1]] })),
+      ).toBe(false);
+    }
+    expect(isLayout({ ...stored, tabs: [stored.tabs[0], stored.tabs[0]] })).toBe(false);
+    expect(isLayout({ ...stored, tabs: [null] })).toBe(false);
+  });
+});
+
+const GRID = { width: 1600, height: 900 };
+const targets = (tab: Tab) => leaves(tab.root).map((leaf) => leaf.target);
+
+describe("placeTarget", () => {
+  it("moves a shown thread to the tab, and closes the tab it leaves empty", () => {
+    const { tab, top } = threePanes();
+    const solo = createTab(createLeaf(draft("solo")));
+    const layout: Layout = { tabs: [tab, solo], activeTabId: tab.id, lastTabId: solo.id };
+
+    const moved = placeTarget(layout, draft("t"), solo.id, GRID);
+    expect(targets(moved.tabs[0]!)).toEqual([draft("l"), draft("b")]);
+    expect(targets(moved.tabs[1]!)).toEqual([draft("solo"), draft("t")]);
+    expect(moved.tabs[0]!.root).not.toHaveProperty("id", top);
+    expect([moved.activeTabId, moved.lastTabId]).toEqual([solo.id, tab.id]);
+    expect(focusedLeaf(moved)!.target).toEqual(draft("t"));
+
+    const emptied = placeTarget(layout, draft("solo"), tab.id, GRID);
+    expect(emptied.tabs.map((t) => t.id)).toEqual([tab.id]);
+    expect(leaves(emptied.tabs[0]!.root)).toHaveLength(4);
+    expect(emptied.lastTabId).toBeNull();
+  });
+
+  it("opens an unshown thread in a blank pane first, else in a new pane", () => {
+    const blank = createLeaf(null);
+    const one = createTab(createLeaf(draft("a")));
+    const two = splitPane(one, one.focusedPaneId, "right", blank);
+    const layout: Layout = { tabs: [two], activeTabId: two.id, lastTabId: null };
+    const filled = placeTarget(layout, draft("x"), two.id, GRID);
+    expect(targets(filled.tabs[0]!)).toEqual([draft("a"), draft("x")]);
+    expect(filled.tabs[0]!.focusedPaneId).toBe(blank.id);
+    const split = placeTarget(filled, draft("y"), two.id, GRID);
+    expect(targets(split.tabs[0]!)).toHaveLength(3);
+    // A draft that holds nothing is blank to the caller.
+    const taken = placeTarget(filled, draft("z"), two.id, GRID, (leaf) =>
+      leaf.target === null ? true : targetKey(leaf.target) === "draft:a",
+    );
+    expect(targets(taken.tabs[0]!)).toEqual([draft("z"), draft("x")]);
+  });
+
+  it("only focuses the pane when the thread is in the tab, or alone and sent to a new tab", () => {
+    const { tab, left } = threePanes();
+    const solo = createTab(createLeaf(draft("solo")));
+    const layout: Layout = {
+      tabs: [{ ...tab, fullscreen: true }, solo],
+      activeTabId: solo.id,
+      lastTabId: null,
+    };
+    const same = placeTarget(layout, draft("l"), tab.id, GRID);
+    expect(same.tabs[0]!).toMatchObject({ focusedPaneId: left, fullscreen: false });
+    expect(shapeOf(same.tabs[0]!.root)).toBe(shapeOf(tab.root));
+    expect(same.activeTabId).toBe(tab.id);
+    expect(placeTarget(layout, draft("solo"), "new", GRID)).toEqual(layout);
+    const out = placeTarget(layout, draft("l"), "new", GRID);
+    expect(out.tabs).toHaveLength(3);
+    expect(targets(out.tabs[2]!)).toEqual([draft("l")]);
+    expect(placeTarget(layout, draft("l"), "gone", GRID)).toBe(layout);
+  });
+});
+
+describe("removeTarget", () => {
+  it("closes the pane, then the tab, and leaves the last tab one empty pane", () => {
+    const { tab } = threePanes();
+    const solo = createTab(createLeaf(draft("solo")));
+    const layout: Layout = { tabs: [tab, solo], activeTabId: solo.id, lastTabId: tab.id };
+    expect(removeTarget(layout, "draft:none")).toBe(layout);
+    const fewer = removeTarget(layout, "draft:t");
+    expect(targets(fewer.tabs[0]!)).toEqual([draft("l"), draft("b")]);
+    const closed = removeTarget(fewer, "draft:solo");
+    expect(closed.tabs.map((t) => t.id)).toEqual([tab.id]);
+    expect(closed.activeTabId).toBe(tab.id);
+    const last = removeTarget(removeTarget(closed, "draft:l"), "draft:b");
+    expect(last.tabs).toHaveLength(1);
+    expect(targets(last.tabs[0]!)).toEqual([null]);
+    expect(isLayout(last)).toBe(true);
+  });
+});
+
+describe("dedupeTargets", () => {
+  it("keeps a repeated thread in the focused pane, else in the first pane", () => {
+    const a = createLeaf(draft("same"));
+    const b = createLeaf(draft("same"));
+    const tab = splitPane(createTab(a), a.id, "right", b);
+    const other = createTab(createLeaf(draft("same")));
+    const layout: Layout = { tabs: [tab, other], activeTabId: tab.id, lastTabId: null };
+    const focusedKept = dedupeTargets(layout);
+    expect(targets(focusedKept.tabs[0]!)).toEqual([null, draft("same")]);
+    expect(targets(focusedKept.tabs[1]!)).toEqual([null]);
+    const firstKept = dedupeTargets({ ...layout, tabs: [tab, other], activeTabId: other.id });
+    expect(targets(firstKept.tabs[1]!)).toEqual([draft("same")]);
+    const clean = createLayout(draft("one"));
+    expect(dedupeTargets(clean)).toBe(clean);
+  });
+});
+
+describe("keepRecent", () => {
+  it("keeps the active tab and the last three shown, and drops closed tabs", () => {
+    const tabs = ["a", "b", "c", "d", "e"].map((id) => ({ ...createTab(createLeaf(null)), id }));
+    const recent = ["a", "b", "c", "d"];
+    expect(keepRecent(recent, "a", tabs)).toBe(recent);
+    expect(keepRecent(recent, "e", tabs)).toEqual(["e", "a", "b", "c"]);
+    expect(keepRecent(recent, "c", tabs.slice(2))).toEqual(["c", "d"]);
+  });
+});
+
+describe("tabGroups", () => {
+  it("lists each tab's panes in reading order and marks the one focused pane", () => {
+    const { tab, bottom } = threePanes();
+    const other = createTab(createLeaf(null));
+    const groups = tabGroups({ tabs: [tab, other], activeTabId: tab.id, lastTabId: null });
+    expect(groups.map((group) => group.active)).toEqual([true, false]);
+    expect(groups[0]!.panes.map((pane) => pane.target)).toEqual([
+      draft("l"),
+      draft("t"),
+      draft("b"),
+    ]);
+    expect(groups.flatMap((group) => group.panes.filter((pane) => pane.focused))).toEqual([
+      expect.objectContaining({ id: bottom }),
+    ]);
+  });
+});
+
+/** Every state a stored or live layout must hold, whatever the keys and drags that led to it. */
+function expectSound(layout: Layout) {
+  expect(isLayout(JSON.parse(JSON.stringify(layout)))).toBe(true);
+  const keys = layout.tabs.flatMap((tab) =>
+    leaves(tab.root).flatMap((leaf) => (leaf.target ? [targetKey(leaf.target)] : [])),
+  );
+  expect(new Set(keys).size).toBe(keys.length);
+  const tabIds = layout.tabs.map((tab) => tab.id);
+  expect(layout.lastTabId === null || tabIds.includes(layout.lastTabId)).toBe(true);
+  for (const tab of layout.tabs) {
+    const ids = leaves(tab.root).map((leaf) => leaf.id);
+    expect(tab.lastPaneId === null || ids.includes(tab.lastPaneId)).toBe(true);
+    expect(tab.fullscreen && !isSplit(tab.root)).toBe(false);
+    const area = [...rects(tab.root).values()].reduce((sum, r) => sum + r.width * r.height, 0);
+    expect(area).toBeCloseTo(1);
+  }
+}
+
+describe("layout operations", () => {
+  it("keep every layout sound over 4000 random keys, drags and route changes", () => {
+    let seed = 20261124;
+    const random = (n: number) => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed % n;
+    };
+    const thread = () => draft(`t${random(9)}`);
+    const direction = () => (["left", "right", "up", "down"] as const)[random(4)]!;
+    let layout = createLayout(null);
+    for (let step = 0; step < 4000; step += 1) {
+      const tab = layout.tabs.find((candidate) => candidate.id === layout.activeTabId)!;
+      const inTab = (fn: (tab: Tab) => Tab) => updateTab(layout, tab.id, fn);
+      const dest = random(4) === 0 ? "new" : layout.tabs[random(layout.tabs.length)]!.id;
+      const before = layout;
+      const op = random(13);
+      switch (op) {
+        case 0:
+          layout = inTab((t) =>
+            splitPane(t, t.focusedPaneId, random(2) ? "right" : "down", createLeaf(null)),
+          );
+          break;
+        case 1:
+          layout = inTab((t) => closePane(t, t.focusedPaneId) ?? t);
+          break;
+        case 2:
+          layout = placeTarget(layout, thread(), dest, GRID);
+          break;
+        case 3:
+          layout = removeTarget(layout, targetKey(thread()));
+          break;
+        case 4:
+          layout = followRoute(layout, thread());
+          break;
+        case 5:
+          layout = breakPane(layout, (["new", "left", "right"] as const)[random(3)]!);
+          break;
+        case 6:
+          layout = closeTab(layout, tab.id) ?? layout;
+          break;
+        case 7:
+          layout = addTab(layout, createTab(createLeaf(null)));
+          break;
+        case 8:
+          layout = inTab((t) => swapLayout(t, random(2) ? 1 : -1));
+          break;
+        case 9:
+          layout = inTab((t) =>
+            movePane(nudgeBorder(t, t.focusedPaneId, direction()), t.focusedPaneId, direction()),
+          );
+          break;
+        case 10:
+          layout = moveTab(stepTab(layout, random(2) ? 1 : -1), random(2) ? 1 : -1);
+          break;
+        case 11:
+          layout = inTab((t) => ({ ...t, fullscreen: isSplit(t.root) && !t.fullscreen }));
+          break;
+        case 12: {
+          const to = neighbor(tab, tab.focusedPaneId, direction());
+          layout =
+            to === null
+              ? layout
+              : inTab((t) => ({ ...t, focusedPaneId: to, lastPaneId: t.focusedPaneId }));
+          break;
+        }
+      }
+      try {
+        expectSound(layout);
+      } catch (error) {
+        throw new Error(`step ${step}, operation ${op} broke ${JSON.stringify(before)}`, {
+          cause: error,
+        });
+      }
+      // A placed thread is where the sidebar will show it.
+      for (const key of ["draft:t0", "draft:t5"]) {
+        const shown = findTarget(layout, key);
+        if (shown === null) continue;
+        expect(
+          tabGroups(layout)
+            .find((group) => group.id === shown.tabId)!
+            .panes.map((p) => p.id),
+        ).toContain(shown.leafId);
+      }
+    }
+  });
+});
+
 describe("swapLayout", () => {
   it("cycles distinct tilings, keeps the panes, and turns side by side into stacked", () => {
     const { tab } = threePanes();
@@ -180,5 +443,6 @@ describe("swapLayout", () => {
     const sideBySide = splitPane(pair, pair.focusedPaneId, "right", createLeaf(null));
     expect(shapeOf(swapLayout(sideBySide, 1).root)).toBe("column(•,•)");
     expect(shapeOf(swapLayout(swapLayout(sideBySide, 1), 1).root)).toBe("row(•,•)");
+    expect(swapLayout(pair, 1)).toBe(pair);
   });
 });

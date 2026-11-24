@@ -17,6 +17,17 @@ body {
   --text-lg: 1.125rem;
 }
 
+/* One line color for every edge: the stock card outline's, the text color at 10%. */
+:root {
+  --z3-line: color-mix(in srgb, var(--color-foreground) 10%, transparent);
+}
+
+/* Stock draws the sidebar's edge from the sidebar text color, a different hue. */
+html[data-theme-id] [data-app-sidebar],
+html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
+  border-color: var(--z3-line);
+}
+
 /* The tab bar is one thin row; under the window controls (collapsed sidebar) it keeps the title
    bar's height. */
 [data-z3-host] {
@@ -29,6 +40,41 @@ body {
 
 [data-z3-tabs] {
   height: var(--z3-bar);
+}
+
+/* The rule under the tab bar is a groove: a shadow line over a lit line, short of both ends. */
+[data-z3-tabs]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0.75rem 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    color-mix(in oklab, var(--color-foreground) 20%, transparent) 50%,
+    color-mix(in oklab, var(--color-background), white 70%) 50%
+  );
+  mask-image: linear-gradient(to right, transparent, black 1.5rem calc(100% - 1.5rem), transparent);
+}
+
+.dark [data-z3-tabs]::after {
+  background: linear-gradient(
+    color-mix(in oklab, var(--color-background), black 55%) 50%,
+    color-mix(in oklab, var(--color-foreground) 9%, transparent) 50%
+  );
+}
+
+/* Panel buttons sit clear of the rule: 20px in the 28px title bar. */
+[data-z3-cell] [data-workspace-titlebar-controls] button {
+  width: 1.25rem;
+  min-width: 0;
+  height: 1.25rem;
+  min-height: 0;
+  padding: 0;
+}
+
+[data-z3-cell] [data-workspace-titlebar-controls] button svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 /* Each pane renders the stock inset, which sizes itself to the viewport. `contain: layout` makes
@@ -58,8 +104,8 @@ body {
   z-index: 61;
   pointer-events: none;
   box-shadow:
-    inset calc(var(--z3-inner-left, 0) * 1px) 0 0 var(--color-border),
-    inset 0 calc(var(--z3-inner-top, 0) * 1px) 0 var(--color-border);
+    inset calc(var(--z3-inner-left, 0) * 1px) 0 0 var(--z3-line),
+    inset 0 calc(var(--z3-inner-top, 0) * 1px) 0 var(--z3-line);
 }
 
 [data-z3-cell][data-z3-inner-left] {
@@ -147,7 +193,74 @@ body {
   display: none;
 }
 
+/* Dense sidebar: one-line thread rows at the tab bar's height, and a thin band for search. */
+[data-sidebar="sidebar"] [data-testid="sidebar-row-folder"] {
+  height: 1.75rem;
+}
+
+[data-sidebar="sidebar"] li[data-thread-item]:has(> [data-testid="sidebar-row-folder"]) {
+  contain-intrinsic-size: auto 1.75rem;
+}
+
+[data-sidebar="sidebar"] [data-slot="sidebar-group"]:has([role="combobox"]) {
+  padding-block: 0.125rem;
+}
+
+[data-z3-tab-group] + [data-z3-tab-group] {
+  margin-top: 0.25rem;
+}
+
+/* A tab that would take the dragged sidebar thread. */
+:is([data-z3-tabs], [data-z3-tab-group], [data-z3-untab])[data-thread-context-over],
+[data-z3-tabs] [data-thread-context-over] {
+  background-color: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
+/* Hairline scrollbars: faint at rest, stronger while the pointer is in their scroller. */
+:root {
+  --app-scrollbar-width: 3px;
+  --app-scrollbar-thumb: color-mix(in srgb, var(--color-foreground) 14%, transparent);
+  --app-scrollbar-thumb-hover: color-mix(in srgb, var(--color-foreground) 40%, transparent);
+}
+
+:where(:not(iframe))::-webkit-scrollbar {
+  height: var(--app-scrollbar-width);
+}
+
+:where(:not(iframe)):hover::-webkit-scrollbar-thumb {
+  background: var(--app-scrollbar-thumb-hover);
+}
+
+body [data-slot="scroll-area-scrollbar"][data-orientation="vertical"] {
+  width: var(--app-scrollbar-width);
+}
+
+body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
+  height: var(--app-scrollbar-width);
+}
+
+/* A pane and the mode label fade in when they appear. Opacity and translate only, so the
+   compositor runs them without a layout pass. */
+[data-z3-cell],
+[data-z3-mode-label] {
+  transition:
+    opacity 120ms ease-out,
+    translate 120ms ease-out;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+[data-z3-mode-label] {
+  @starting-style {
+    translate: 0.375rem 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  [data-z3-cell],
+  [data-z3-mode-label],
   [data-z3-cell]::after,
   [data-sidebar="sidebar"] {
     transition: none;

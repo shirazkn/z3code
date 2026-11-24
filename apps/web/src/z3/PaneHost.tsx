@@ -1,9 +1,10 @@
 import { Navigate, useLocation, useRouter } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
 import { ThreadRouteView } from "../components/ThreadRouteView";
 import { SidebarInset } from "../components/ui/sidebar";
 import { ComposerHandleContext, useComposerHandleContext } from "../composerHandleContext";
+import { cn } from "../lib/utils";
 import type { ThreadRouteTarget } from "../threadRoutes";
 import { dropPaneTarget, focusPaneById, locationOf, registerHost } from "./actions";
 import "./keys";
@@ -11,10 +12,12 @@ import {
   activeTab,
   focusedLeaf,
   followRoute,
+  keepRecent,
   leaves,
   type Leaf,
   type Rect,
   rects,
+  type Tab,
   targetKey,
 } from "./layout";
 import { useZ3Store } from "./store";
@@ -63,35 +66,62 @@ export function PaneHost({
     composer?.current?.focusAtEnd();
   }, [composer, focusRequest, focusedId, focusedReady]);
 
-  const cells = leaves(tab.root);
-  const all = rects(tab.root);
-  const multi = cells.length > 1;
+  // Derived in render: the tabs last shown stay mounted, so a switch back paints at once.
+  const [recent, setRecent] = useState<ReadonlyArray<string>>([tab.id]);
+  const kept = keepRecent(recent, tab.id, layout.tabs);
+  if (kept !== recent) setRecent(kept);
+
   return (
     <SidebarInset
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
       inert={background}
       data-z3-host
-      data-z3-split={multi || undefined}
     >
       <TabStrip layout={layout} />
-      <div data-z3-grid className="relative min-h-0 flex-1">
-        {cells.map((leaf) => {
-          const focused = leaf.id === focusedId;
-          const rect = all.get(leaf.id)!;
-          return (
-            <PaneCell
-              key={leaf.id}
-              leaf={leaf}
-              rect={tab.fullscreen && focused ? FULL : rect}
-              focused={focused}
-              multi={multi}
-              hidden={tab.fullscreen && !focused}
+      <div className="relative min-h-0 flex-1">
+        {layout.tabs
+          .filter((candidate) => kept.includes(candidate.id))
+          .map((candidate) => (
+            <TabGrid
+              key={candidate.id}
+              tab={candidate}
+              active={candidate.id === tab.id}
               background={background}
             />
-          );
-        })}
+          ))}
       </div>
     </SidebarInset>
+  );
+}
+
+/** One tab's tiling. A tab that is not the active one stays mounted, out of sight and inert. */
+function TabGrid({ tab, active, background }: { tab: Tab; active: boolean; background: boolean }) {
+  const cells = leaves(tab.root);
+  const all = rects(tab.root);
+  const multi = cells.length > 1;
+  return (
+    <div
+      data-z3-grid={active ? "" : undefined}
+      data-z3-split={multi || undefined}
+      className={cn("absolute inset-0", !active && "invisible opacity-0")}
+      inert={!active}
+    >
+      {cells.map((leaf) => {
+        const focused = active && leaf.id === tab.focusedPaneId;
+        const shown = leaf.id === tab.focusedPaneId;
+        return (
+          <PaneCell
+            key={leaf.id}
+            leaf={leaf}
+            rect={tab.fullscreen && shown ? FULL : all.get(leaf.id)!}
+            focused={focused}
+            multi={multi}
+            hidden={tab.fullscreen && !shown}
+            background={background || !active}
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -111,7 +141,7 @@ function PaneCell({
   background: boolean;
 }) {
   const composer = useComposerHandleContext();
-  const claim = focused ? undefined : () => focusPaneById(leaf.id);
+  const claim = focused || background ? undefined : () => focusPaneById(leaf.id);
   return (
     <div
       data-z3-cell={leaf.id}
