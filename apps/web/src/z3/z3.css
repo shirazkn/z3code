@@ -1,47 +1,104 @@
 /* Every color comes from the active theme's variables. */
 
-/* Each pane renders the stock inset, which sizes itself to the viewport. */
+/* Each pane renders the stock inset, which sizes itself to the viewport. `contain: layout` makes
+   the pane the box of the chat view's fixed elements (its panel buttons), not the window. */
+[data-z3-cell] {
+  contain: layout;
+}
+
 [data-z3-cell] > [data-slot="sidebar-inset"] {
   height: 100%;
 }
 
-/* Focus shows as light: panes without focus sit slightly back, the focused pane has a faint
-   edge glow, and the glow brightens a little while a mode is on (warning tone when locked). */
+/* Hairline dividers on the inner edges of a split. */
+[data-z3-cell]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 61;
+  pointer-events: none;
+  box-shadow:
+    inset calc(var(--z3-inner-left, 0) * 1px) 0 0 var(--color-border),
+    inset 0 calc(var(--z3-inner-top, 0) * 1px) 0 var(--color-border);
+}
+
+[data-z3-cell][data-z3-inner-left] {
+  --z3-inner-left: 1;
+}
+
+[data-z3-cell][data-z3-inner-top] {
+  --z3-inner-top: 1;
+}
+
+/* In a split, the focused pane reads at higher contrast and the others fade back. The contrast
+   formula is index.css's, with the boost raised. */
 [data-z3-cell]::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 40;
+  z-index: 60;
   pointer-events: none;
-  transition:
-    box-shadow 150ms ease-out,
-    background-color 150ms ease-out;
+  transition: background-color 150ms ease-out;
 }
 
-[data-z3-cell][data-multi]:not([data-focused])::after {
-  background-color: color-mix(in srgb, var(--color-background) 22%, transparent);
+[data-z3-split] [data-z3-cell]:not([data-focused])::after {
+  background-color: color-mix(in srgb, var(--color-background) 30%, transparent);
 }
 
-[data-z3-cell][data-multi][data-focused]::after {
-  box-shadow:
-    inset 0 0 0 0.5px color-mix(in srgb, var(--color-primary) 22%, transparent),
-    inset 0 0 10px color-mix(in srgb, var(--color-primary) 6%, transparent);
+[data-z3-split] [data-z3-cell][data-focused] {
+  --z3-boost: min(100%, calc(var(--appearance-contrast-boost) + 30%));
+  --contrast-foreground: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--foreground) var(--appearance-contrast-base), var(--background)),
+    var(--appearance-contrast-target) var(--z3-boost)
+  );
+  --contrast-muted-foreground: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--muted-foreground) var(--appearance-contrast-base), var(--background)),
+    var(--appearance-contrast-target) var(--z3-boost)
+  );
 }
 
-[data-z3-host]:not([data-mode="normal"]) [data-z3-cell][data-focused]::after {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent),
-    inset 0 0 14px color-mix(in srgb, var(--color-primary) 12%, transparent);
+/* A mode puts the focused pane in a spotlight: the other panes and the sidebar dim. */
+[data-z3-mode] [data-z3-split] [data-z3-cell]:not([data-focused])::after {
+  background-color: color-mix(in srgb, var(--color-background) 50%, transparent);
 }
 
-[data-z3-host][data-mode="locked"] [data-z3-cell][data-focused]::after {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--color-warning) 35%, transparent),
-    inset 0 0 14px color-mix(in srgb, var(--color-warning) 12%, transparent);
+[data-sidebar="sidebar"] {
+  transition: opacity 150ms ease-out;
+}
+
+[data-z3-mode] [data-sidebar="sidebar"] {
+  opacity: 0.5;
+}
+
+/* Splits and tabbed views are dense: one-line pane headers and narrow side gutters. The top-left
+   pane keeps the full header when it sits under the window controls (collapsed sidebar, no tabs). */
+:is([data-z3-split], [data-z3-strip]) [data-z3-cell] {
+  --workspace-topbar-height: 2.25rem;
+  --workspace-titlebar-content-left: 1.25rem;
+}
+
+[data-sidebar-state="collapsed"] [data-z3-split] [data-z3-cell][data-z3-corner] {
+  --workspace-topbar-height: inherit;
+  --workspace-titlebar-content-left: inherit;
+}
+
+:is([data-z3-split], [data-z3-strip]) [data-z3-cell] .chat-composer-lane {
+  padding-inline: calc(0.75rem + var(--chat-lane-inset-start, 0px))
+    calc(0.75rem + var(--chat-lane-inset-end, 0px));
+}
+
+:is([data-z3-split], [data-z3-strip]) [data-z3-cell] [data-chat-canvas] .messages-timeline-scroll {
+  padding-inline: calc(
+      0.75rem + var(--chat-lane-inset-start, 0px) - var(--chat-timeline-gutter, 0px)
+    )
+    calc(0.75rem + var(--chat-lane-inset-end, 0px) - var(--chat-timeline-gutter, 0px));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-z3-cell]::after {
+  [data-z3-cell]::after,
+  [data-sidebar="sidebar"] {
     transition: none;
   }
 }

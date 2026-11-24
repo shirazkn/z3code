@@ -18,7 +18,7 @@ import {
   targetKey,
 } from "./layout";
 import { useZ3Store } from "./store";
-import { TabRename } from "./TabRename";
+import { OpenThreadMarks, TabStrip, tabStripVisible } from "./TabStrip";
 import "./z3.css";
 
 const FULL: Rect = { left: 0, top: 0, width: 1, height: 1 };
@@ -67,21 +67,28 @@ export function PaneHost({
   const cells = leaves(tab.root);
   const all = rects(tab.root);
   const multi = cells.length > 1;
+  // Without the tab strip, the top-left pane's header sits under the window controls.
+  const stripShown = tabStripVisible(layout, mode);
   return (
     <SidebarInset
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
       inert={background}
       data-z3-host
-      data-mode={mode}
+      data-z3-split={multi || undefined}
+      data-z3-strip={stripShown || undefined}
     >
+      <OpenThreadMarks layout={layout} />
+      <TabStrip layout={layout} />
       <div data-z3-grid className="relative min-h-0 flex-1">
         {cells.map((leaf) => {
           const focused = leaf.id === focusedId;
+          const rect = all.get(leaf.id)!;
           return (
             <PaneCell
               key={leaf.id}
               leaf={leaf}
-              rect={tab.fullscreen && focused ? FULL : all.get(leaf.id)!}
+              rect={tab.fullscreen && focused ? FULL : rect}
+              corner={!stripShown && rect.left === 0 && rect.top === 0}
               focused={focused}
               multi={multi}
               hidden={tab.fullscreen && !focused}
@@ -89,7 +96,6 @@ export function PaneHost({
             />
           );
         })}
-        <TabRename layout={layout} />
       </div>
     </SidebarInset>
   );
@@ -102,9 +108,11 @@ function PaneCell({
   multi,
   hidden,
   background,
+  corner,
 }: {
   leaf: Leaf;
   rect: Rect;
+  corner: boolean;
   focused: boolean;
   multi: boolean;
   hidden: boolean;
@@ -117,6 +125,9 @@ function PaneCell({
       data-z3-cell={leaf.id}
       data-focused={focused || undefined}
       data-multi={multi || undefined}
+      data-z3-corner={corner || undefined}
+      data-z3-inner-left={(!hidden && rect.left > 0) || undefined}
+      data-z3-inner-top={(!hidden && rect.top > 0) || undefined}
       hidden={hidden}
       className="absolute flex min-h-0 min-w-0 flex-col overflow-hidden"
       style={{

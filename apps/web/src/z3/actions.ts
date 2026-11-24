@@ -32,6 +32,7 @@ import {
   resizePaneAll,
   splitPane,
   stepTab,
+  swapLayout,
   targetKey,
   updateTab,
   activateTab,
@@ -146,7 +147,7 @@ export function runAction(action: Action): boolean {
         withTab((t) => ({ ...focusPane(t, target), fullscreen: false }));
         return true;
       }
-      if (!action.orTab || layout.tabs.length < 2) return false;
+      if (!action.orTab || layout.tabs.length < 2) return returnFocusToPane();
       commit(stepTab(layout, action.dir === "left" ? -1 : 1));
       return true;
     }
@@ -212,6 +213,12 @@ export function runAction(action: Action): boolean {
       commit(next);
       return true;
     }
+    case "swapLayout": {
+      const next = swapLayout(tab, action.step);
+      if (next === tab) return false;
+      useZ3Store.setState({ layout: updateTab(layout, tab.id, () => next) });
+      return true;
+    }
     case "nudge":
     case "resize": {
       const next =
@@ -275,6 +282,23 @@ export function renameActiveTab(name: string): void {
       name: trimmed === "" ? null : trimmed,
     })),
   });
+}
+
+export function activateTabById(tabId: string): void {
+  commit(activateTab(useZ3Store.getState().layout, tabId));
+}
+
+export function closeTabById(tabId: string): void {
+  const next = closeTab(useZ3Store.getState().layout, tabId);
+  if (next !== null) commit(next);
+}
+
+/** With no pane to move to, a pane key still brings DOM focus back into the focused pane. */
+function returnFocusToPane(): boolean {
+  const cell = document.querySelector("[data-z3-cell][data-focused]");
+  if (cell === null || cell.contains(document.activeElement)) return false;
+  useZ3Store.setState({ focusRequest: activeTab(useZ3Store.getState().layout).focusedPaneId });
+  return true;
 }
 
 /** A pointer press or focus inside a passive pane makes it the focused pane. */

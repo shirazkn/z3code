@@ -16,6 +16,8 @@ import {
   rects,
   nudgeBorder,
   splitPane,
+  shapeOf,
+  swapLayout,
   type Layout,
   type Tab,
 } from "./layout";
@@ -144,5 +146,26 @@ describe("isLayout", () => {
       false,
     );
     expect(isLayout(null)).toBe(false);
+  });
+});
+
+describe("swapLayout", () => {
+  it("cycles distinct tilings, keeps the panes, and turns side by side into stacked", () => {
+    const { tab } = threePanes();
+    const ids = leaves(tab.root).map((leaf) => leaf.id);
+    const seen = new Set<string>();
+    let next = tab;
+    for (let i = 0; i < 4; i += 1) {
+      next = swapLayout(next, 1);
+      seen.add(shapeOf(next.root));
+      expect(leaves(next.root).map((leaf) => leaf.id)).toEqual(ids);
+    }
+    expect(seen).toEqual(
+      new Set(["row(•,•,•)", "column(•,•,•)", "row(•,column(•,•))", "column(row(•,•),•)"]),
+    );
+    const pair = createTab(createLeaf(null));
+    const sideBySide = splitPane(pair, pair.focusedPaneId, "right", createLeaf(null));
+    expect(shapeOf(swapLayout(sideBySide, 1).root)).toBe("column(•,•)");
+    expect(shapeOf(swapLayout(swapLayout(sideBySide, 1), 1).root)).toBe("row(•,•)");
   });
 });

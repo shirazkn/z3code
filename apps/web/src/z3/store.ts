@@ -90,4 +90,9 @@ function syncPaneDrafts(layout: Layout): void {
 
 useZ3Store.subscribe((state, previous) => {
   if (state.layout !== previous.layout) syncPaneDrafts(state.layout);
+  // A mode dims everything but the focused pane (z3.css); the lock is not a mode here.
+  if (state.mode !== previous.mode) {
+    const active = state.mode !== "normal" && state.mode !== "locked";
+    document.documentElement.toggleAttribute("data-z3-mode", active);
+  }
 });

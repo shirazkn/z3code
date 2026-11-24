@@ -39,6 +39,12 @@ describe("resolveKey", () => {
     expect(resolve("normal", "z").kind).toBe("pass");
     // Option+arrows stay the text field's word moves.
     expect(resolve("normal", "alt+ArrowLeft").kind).toBe("pass");
+    // Globe+arrow is a pane move only, so it never reaches the sidebar's Home/End.
+    const home = resolve("normal", "Home");
+    expect(home.kind === "bind" && home.swallow).toBe(true);
+    expect(home.kind === "bind" && home.bind.action).toEqual({ do: "focus", dir: "left" });
+    const layout = resolve("normal", "alt+]");
+    expect(layout.kind === "bind" && layout.bind.action).toEqual({ do: "swapLayout", step: 1 });
     const direct = resolve("normal", "alt+h");
     expect(direct.kind === "bind" && direct.swallow).toBe(false);
   });

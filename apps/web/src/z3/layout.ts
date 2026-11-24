@@ -100,9 +100,12 @@ export function activeTab(layout: Layout): Tab {
   return layout.tabs.find((tab) => tab.id === layout.activeTabId) ?? layout.tabs[0]!;
 }
 
-export function focusedLeaf(layout: Layout): Leaf | null {
-  const tab = activeTab(layout);
+export function tabFocusedLeaf(tab: Tab): Leaf | null {
   return findLeaf(tab.root, tab.focusedPaneId);
+}
+
+export function focusedLeaf(layout: Layout): Leaf | null {
+  return tabFocusedLeaf(activeTab(layout));
 }
 
 export function isMulti(layout: Layout): boolean {
@@ -336,6 +339,49 @@ export function movePane(tab: Tab, leafId: string, to: Direction | 1 | -1): Tab 
       : neighbor(tab, leafId, to);
   if (other === null || other === leafId) return tab;
   return { ...tab, root: swapLeaves(tab.root, leafId, other) };
+}
+
+/** A tiling's shape without ids or sizes, e.g. `row(•,column(•,•))`. */
+export function shapeOf(node: PaneNode): string {
+  return isSplit(node) ? `${node.axis}(${node.children.map(shapeOf).join(",")})` : "•";
+}
+
+function evenSplit(axis: Axis, children: ReadonlyArray<PaneNode>): PaneNode {
+  if (children.length === 1) return children[0]!;
+  return {
+    id: newId("split"),
+    axis,
+    children,
+    sizes: children.map(() => 1 / children.length),
+  };
+}
+
+/** Zellij's swap layouts: side by side, stacked, one main pane with a stack, and a grid. */
+function swapLayouts(panes: ReadonlyArray<Leaf>): PaneNode[] {
+  const [main, ...rest] = panes;
+  const columns = Math.ceil(Math.sqrt(panes.length));
+  const gridRows: PaneNode[] = [];
+  for (let index = 0; index < panes.length; index += columns) {
+    gridRows.push(evenSplit("row", panes.slice(index, index + columns)));
+  }
+  const candidates = [
+    evenSplit("row", panes),
+    evenSplit("column", panes),
+    evenSplit("row", [main!, evenSplit("column", rest)]),
+    evenSplit("column", gridRows),
+  ].map(normalize);
+  return candidates.filter(
+    (node, index) => candidates.findIndex((other) => shapeOf(other) === shapeOf(node)) === index,
+  );
+}
+
+/** Zellij's NextSwapLayout and PreviousSwapLayout, keeping the panes in order. */
+export function swapLayout(tab: Tab, step: 1 | -1): Tab {
+  const layouts = swapLayouts(leaves(tab.root));
+  if (layouts.length < 2) return tab;
+  const current = layouts.findIndex((node) => shapeOf(node) === shapeOf(tab.root));
+  const next = current === -1 ? (step === 1 ? 0 : layouts.length - 1) : current + step;
+  return { ...tab, root: layouts[(next + layouts.length) % layouts.length]!, fullscreen: false };
 }
 
 export function updateTab(layout: Layout, tabId: string, fn: (tab: Tab) => Tab): Layout {

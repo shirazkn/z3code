@@ -33,6 +33,7 @@ export type Action =
   | { readonly do: "lastTab" }
   | { readonly do: "moveTab"; readonly step: 1 | -1 }
   | { readonly do: "breakPane"; readonly to: "new" | "left" | "right" }
+  | { readonly do: "swapLayout"; readonly step: 1 | -1 }
   | { readonly do: "nudge"; readonly dir: Direction }
   | { readonly do: "resize"; readonly grow: boolean }
   | { readonly do: "move"; readonly to: Direction | 1 | -1 }
@@ -48,6 +49,8 @@ export interface Bind {
   readonly keys: ReadonlyArray<string>;
   readonly action?: Action;
   readonly next?: Mode;
+  /** Never falls through to the page, even with nothing to act on. */
+  readonly always?: true;
 }
 
 const bind = (keys: string | ReadonlyArray<string>, action?: Action, next?: Mode): Bind => ({
@@ -65,6 +68,8 @@ export const MODE_KEYS: ReadonlyArray<readonly [Mode, string]> = [
   ["session", "mod+o"],
 ];
 
+const GLOBE_ARROW = { left: "home", right: "end", up: "pageup", down: "pagedown" } as const;
+
 const focusBinds = (): Bind[] => [
   bind(["h", "arrowleft"], { do: "focus", dir: "left" }),
   bind(["l", "arrowright"], { do: "focus", dir: "right" }),
@@ -75,11 +80,15 @@ const focusBinds = (): Bind[] => [
 /** The Zellij default keymap with the deltas of the dotfiles `config.kdl`. */
 const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> = {
   normal: [
-    // dotfiles: Globe+arrow, Ctrl+arrow, Cmd+arrow (Ghostty) and Cmd+Shift+[ ] (Ghostty).
-    bind(["home", "ctrl+arrowleft"], { do: "focus", dir: "left", orTab: true }),
-    bind(["end", "ctrl+arrowright"], { do: "focus", dir: "right", orTab: true }),
-    bind(["pageup", "ctrl+arrowup", "mod+arrowup"], { do: "focus", dir: "up" }),
-    bind(["pagedown", "ctrl+arrowdown", "mod+arrowdown"], { do: "focus", dir: "down" }),
+    // dotfiles: Globe+arrow (Home End PageUp PageDown) and Ctrl+arrow move between panes only.
+    ...(["left", "right", "up", "down"] as const).map((dir): Bind => ({
+      keys: [GLOBE_ARROW[dir], `ctrl+arrow${dir}`],
+      action: { do: "focus", dir },
+      always: true,
+    })),
+    // dotfiles (Ghostty): Cmd+Up/Down, and Cmd+Shift+[ ] for tabs.
+    bind("mod+arrowup", { do: "focus", dir: "up" }),
+    bind("mod+arrowdown", { do: "focus", dir: "down" }),
     bind(["shift+pageup", "ctrl+shift+arrowup"], { do: "scroll", by: "page", step: -1 }),
     bind(["shift+pagedown", "ctrl+shift+arrowdown"], { do: "scroll", by: "page", step: 1 }),
     bind("mod+shift+[", { do: "stepTab", step: -1 }),
@@ -111,6 +120,8 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
       bind(`${n}`, { do: "goToTab", index: n - 1 }, "normal"),
     ),
     bind("tab", { do: "lastTab" }),
+    bind("space", { do: "swapLayout", step: 1 }),
+    bind("shift+space", { do: "swapLayout", step: -1 }),
   ],
   resize: [
     // Not Zellij's grow-only Increase/Decrease: the border follows the key, so opposites undo.
@@ -154,6 +165,8 @@ const UNLOCKED: ReadonlyArray<Bind> = [
   bind("alt+k", { do: "focus", dir: "up" }),
   bind(["alt+=", "alt+shift+="], { do: "resize", grow: true }),
   bind("alt+-", { do: "resize", grow: false }),
+  bind("alt+[", { do: "swapLayout", step: -1 }),
+  bind("alt+]", { do: "swapLayout", step: 1 }),
   bind("alt+i", { do: "moveTab", step: -1 }),
   bind("alt+o", { do: "moveTab", step: 1 }),
 ];
@@ -225,7 +238,9 @@ export function resolveKey(mode: Mode, event: ShortcutEventLike, platform: strin
     return { kind: "bind", bind: { keys: [], next: "normal" }, swallow: true };
   }
   const found = findBind(KEYMAP[mode], event, platform) ?? findBind(UNLOCKED, event, platform);
-  if (found !== null) return { kind: "bind", bind: found, swallow: modal };
+  if (found !== null) {
+    return { kind: "bind", bind: found, swallow: modal || found.always === true };
+  }
   return modal ? { kind: "swallow" } : { kind: "pass" };
 }
 
@@ -241,6 +256,7 @@ export const MODE_HINTS: Readonly<
     ["⌘↑ ⌘↓", "focus up / down"],
     ["⌘⇧[ ⌘⇧]", "previous / next tab"],
     ["⌥= ⌥−", "grow / shrink"],
+    ["⌥[ ⌥]", "change layout"],
     ["⌥I ⌥O", "move tab"],
     ["⇧PgUp ⇧PgDn", "page scroll"],
     ["⇪", "lock / unlock"],
@@ -263,6 +279,7 @@ export const MODE_HINTS: Readonly<
     ["1–9", "go to"],
     ["⇥", "last"],
     ["b [ ]", "break pane out"],
+    ["space", "change layout"],
   ],
   resize: [
     ["h j k l", "move border"],

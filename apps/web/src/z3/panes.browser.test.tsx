@@ -74,7 +74,8 @@ const focusedIndex = () => cells().findIndex((cell) => cell.hasAttribute("data-f
 const composers = () => [
   ...document.querySelectorAll<HTMLElement>('[data-testid="composer-editor"]'),
 ];
-const mode = () => document.querySelector("[data-z3-host]")?.getAttribute("data-mode");
+const mode = () => useZ3Store.getState().mode;
+const spotlit = () => document.documentElement.hasAttribute("data-z3-mode");
 const press = (keys: string) => userEvent.keyboard(keys);
 
 it("pane mode splits, moves focus with the route, swallows other keys, and closes", async () => {
@@ -88,11 +89,13 @@ it("pane mode splits, moves focus with the route, swallows other keys, and close
 
   await press("{Control>}p{/Control}");
   expect(mode()).toBe("pane");
+  expect(spotlit()).toBe(true);
   await press("z");
   expect(firstComposer.textContent).toBe("");
 
   await press("c");
   expect(mode()).toBe("normal");
+  expect(spotlit()).toBe(false);
   await vi.waitFor(() => expect(composers()).toHaveLength(2));
   expect(focusedIndex()).toBe(1);
   expect(cells()[0]!.contains(firstComposer)).toBe(true);
@@ -119,21 +122,39 @@ it("pane mode splits, moves focus with the route, swallows other keys, and close
   expect(cells()[0]!.contains(firstComposer)).toBe(true);
 });
 
-it("tab mode opens a tab with its own draft and goes back by number", async () => {
+it("tabs show in the strip, and a thread lives in one pane: opening it again jumps there", async () => {
   const thread = threadWithHistory("z3-tabs", 1);
   using _environment = setup([thread]);
   await page.viewport(1600, 800);
   const { router, screen } = await openThread(thread);
   await using _screen = screen;
   const threadPath = router.state.location.pathname;
+  const stripTabs = () => [...document.querySelectorAll("[data-z3-tabs] [data-active-tab]")];
+  expect(stripTabs()).toHaveLength(0);
 
   await press("{Control>}t{/Control}n");
-  await vi.waitFor(() => expect(router.state.location.pathname).toContain("/draft/"));
-  expect(useZ3Store.getState().layout.tabs).toHaveLength(2);
-  const tab = activeTab(useZ3Store.getState().layout);
-  expect(leaves(tab.root)[0]!.target?.kind).toBe("draft");
+  await vi.waitFor(() =>
+    expect(leaves(activeTab(useZ3Store.getState().layout).root)[0]!.target?.kind).toBe("draft"),
+  );
+  expect(router.state.location.pathname).toContain("/draft/");
+  await vi.waitFor(() => expect(stripTabs()).toHaveLength(2));
+  expect(stripTabs().map((tab) => tab.getAttribute("data-active-tab"))).toEqual(["false", "true"]);
 
-  await press("{Control>}t{/Control}1");
-  await vi.waitFor(() => expect(router.state.location.pathname).toBe(threadPath));
+  // What a sidebar click does: the route names the thread, which tab 1 already shows.
+  await router.navigate({ to: threadPath });
+  await vi.waitFor(() =>
+    expect(stripTabs().map((tab) => tab.getAttribute("data-active-tab"))).toEqual([
+      "true",
+      "false",
+    ]),
+  );
+  const shown = useZ3Store
+    .getState()
+    .layout.tabs.flatMap((tab) => leaves(tab.root))
+    .filter((leaf) => leaf.target?.kind === "server");
+  expect(shown).toHaveLength(1);
   await expect.element(page.getByText("Answer 0 for z3-tabs.")).toBeVisible();
+
+  await userEvent.click(stripTabs()[1]!.querySelector("button:last-child")!);
+  await vi.waitFor(() => expect(router.state.location.pathname).toContain("/draft/"));
 });
