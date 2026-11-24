@@ -20,6 +20,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - A focus move or a tab switch paints first; the thread views and the route follow in a later render.
 - With the sidebar collapsed the tab bar stays 28 px, except beside the macOS window buttons (a window that is not full screen).
 - The first launch sets the glass opacity to 50%.
+- A pane whose Claude thread published or read an artifact shows a window icon in its title bar. A click opens the newest artifact in the Browser panel, in a browser profile of the thread's provider account (added on first use, with its own cookies); sign in to claude.ai once per profile. Without a Browser panel the link opens in a new window.
 - The four tabs shown last stay loaded, so a switch back does not load the threads again.
 - The tab bar is the top row. Tabs are named Tab 1, Tab 2… until you rename them (double-click, or Cmd+T r); hover shows a close button; + opens a tab. While a mode is on, the bar's right end names it and lists its keys; Locked shows while the lock is on.
 - Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only.
@@ -43,7 +44,7 @@ The keymap is Zellij's default plus the dotfiles' `config.kdl` deltas, with the 
 
 Esc, Enter or the mode key again return to normal mode. A mode swallows the keys it does not bind.
 
-Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes. With no pane to the left or right they go to the previous or next tab; with no pane and no other tab they bring the keyboard back to the focused pane. Alt+N new pane, Alt+HJKL focus (Alt+H/L go to the next tab at the edge), Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Cmd+Up/Down focus, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] previous/next tab. Option+arrows stay the text field's word moves. Other normal-mode keys with nothing to act on keep their stock meaning.
+Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes. With no pane to the left or right they go to the previous or next tab and enter it at the near edge, so repeated presses walk every pane of every tab; with no pane and no other tab they bring the keyboard back to the focused pane. Alt+N new pane, Alt+HJKL focus (Alt+H/L go to the next tab at the edge), Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Cmd+Up/Down focus, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] previous/next tab. Option+arrows stay the text field's word moves. Other normal-mode keys with nothing to act on keep their stock meaning.
 
 Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ]. macOS Hide keeps its menu item and loses Cmd+H.
 

@@ -11,6 +11,7 @@ import {
   createLeaf,
   createTab,
   dedupeTargets,
+  edgePane,
   findTarget,
   focusedLeaf,
   followRoute,
@@ -290,6 +291,16 @@ describe("dedupeTargets", () => {
     expect(targets(firstKept.tabs[1]!)).toEqual([draft("same")]);
     const clean = createLayout(draft("one"));
     expect(dedupeTargets(clean)).toBe(clean);
+  });
+});
+
+describe("edgePane", () => {
+  it("gives the topmost pane on the side a focus move enters the tab from", () => {
+    const { tab, left, top } = threePanes();
+    expect(edgePane(tab, "left")).toBe(left);
+    expect(edgePane(tab, "right")).toBe(top);
+    const single = createTab(createLeaf(null));
+    expect(edgePane(single, "right")).toBe(single.focusedPaneId);
   });
 });
 

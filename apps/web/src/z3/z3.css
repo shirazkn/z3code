@@ -104,6 +104,15 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   visibility: hidden;
 }
 
+/* The artifact button sits left of the focused pane's panel buttons, else at the pane's edge. */
+[data-z3-artifact] {
+  right: 0.75rem;
+}
+
+[data-z3-cell][data-focused] [data-z3-artifact] {
+  right: 6rem;
+}
+
 /* Hairline dividers on the inner edges of a split. */
 [data-z3-cell]::before {
   content: "";

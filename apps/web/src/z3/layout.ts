@@ -265,6 +265,16 @@ export function neighbor(tab: Tab, leafId: string, direction: Direction): string
   return best?.id ?? null;
 }
 
+/** The pane on the tab's `side` edge, the topmost of them: where a focus move from the next tab lands. */
+export function edgePane(tab: Tab, side: "left" | "right"): string {
+  let best: { id: string; rect: Rect } | null = null;
+  for (const [id, rect] of rects(tab.root)) {
+    const onEdge = side === "left" ? rect.left < EPSILON : rect.left + rect.width > 1 - EPSILON;
+    if (onEdge && (best === null || rect.top < best.rect.top - EPSILON)) best = { id, rect };
+  }
+  return best?.id ?? tab.focusedPaneId;
+}
+
 export function cyclePane(tab: Tab, step: 1 | -1): string {
   const ids = leaves(tab.root).map((leaf) => leaf.id);
   const index = ids.indexOf(tab.focusedPaneId);

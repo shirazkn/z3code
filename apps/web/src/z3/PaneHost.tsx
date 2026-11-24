@@ -20,6 +20,7 @@ import {
   type Tab,
   targetKey,
 } from "./layout";
+import { PaneArtifact } from "./PaneArtifact";
 import { useZ3Store } from "./store";
 import { TabStrip } from "./TabStrip";
 import "./z3.css";
@@ -163,6 +164,7 @@ function PaneCell({
     >
       {/* Only the focused pane's composer answers the app-wide composer handle. */}
       <ComposerHandleContext value={live ? composer : null}>
+        {leaf.target?.kind === "server" ? <PaneArtifact threadRef={leaf.target.threadRef} /> : null}
         {leaf.target ? (
           <ThreadRouteView
             target={leaf.target}

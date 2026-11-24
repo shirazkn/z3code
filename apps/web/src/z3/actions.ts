@@ -18,6 +18,7 @@ import {
   createLeaf,
   createTab,
   cyclePane,
+  edgePane,
   focusedLeaf,
   focusPane,
   isSplit,
@@ -184,7 +185,15 @@ export function runAction(action: Action): boolean {
         return true;
       }
       if (!action.orTab || layout.tabs.length < 2) return returnFocusToPane();
-      commit(stepTab(layout, action.dir === "left" ? -1 : 1));
+      // The move goes on into the next tab: it enters at the edge it crosses.
+      const stepped = stepTab(layout, action.dir === "left" ? -1 : 1);
+      const entered = action.dir === "left" ? "right" : "left";
+      commit(
+        updateTab(stepped, stepped.activeTabId, (t) => ({
+          ...focusPane(t, edgePane(t, entered)),
+          fullscreen: false,
+        })),
+      );
       return true;
     }
     case "cyclePane":
