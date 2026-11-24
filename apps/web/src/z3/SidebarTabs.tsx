@@ -164,7 +164,7 @@ export function SidebarTabPaneRow({
         data-sidebar-parent={sidebarTabRowId(tab.id)}
         aria-current={pane.focused ? "true" : undefined}
         className={cn(
-          "flex h-7 w-full cursor-pointer items-center rounded-md px-(--sidebar-row-content-inset) text-left text-sm outline-none hover:bg-sidebar-row-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+          "flex h-7 w-full cursor-pointer items-center rounded-md ps-9 pe-(--sidebar-row-content-inset) text-left text-sm outline-none hover:bg-sidebar-row-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
           pane.focused
             ? "bg-sidebar-row-active text-sidebar-foreground"
             : "text-sidebar-muted-foreground",

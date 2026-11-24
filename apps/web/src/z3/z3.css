@@ -50,6 +50,25 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   height: var(--z3-bar);
 }
 
+/* Dark themes: the chat area's background runs to true black at its four edges, the tab bar's
+   top included. The panes' own backgrounds give way, so one fade spans the tab bar and every pane. */
+.dark [data-z3-host] {
+  background-image:
+    linear-gradient(to bottom, black, rgb(0 0 0 / 0.45) 1.25rem, transparent 3.5rem),
+    linear-gradient(to right, black, rgb(0 0 0 / 0.45) 1.5rem, transparent 4.5rem),
+    linear-gradient(to left, black, rgb(0 0 0 / 0.45) 1.5rem, transparent 4.5rem),
+    linear-gradient(to top, black, rgb(0 0 0 / 0.45) 1.5rem, transparent 4.5rem),
+    var(--surface-grain);
+  background-size: auto, auto, auto, auto, var(--surface-grain-size);
+}
+
+.dark [data-z3-cell] > [data-slot="sidebar-inset"],
+.dark [data-z3-cell] > [data-slot="sidebar-inset"] > .bg-background,
+.dark [data-z3-cell] [data-workspace-area] {
+  background-color: transparent;
+  background-image: none;
+}
+
 /* The rule under the tab bar is a groove: a shadow line over a lit line, short of both ends. */
 [data-z3-tabs]::after {
   content: "";
@@ -245,6 +264,13 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 
 [data-z3-tab-group] + [data-z3-tab-group] {
   margin-top: 0.25rem;
+}
+
+/* The threads outside tabs start below a rule, clear of the last tab's rows. */
+[data-z3-tab-group] + li:not([data-z3-tab-group]) {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--z3-line);
+  padding-top: 0.5rem;
 }
 
 /* A tab that would take the dragged sidebar thread. */
