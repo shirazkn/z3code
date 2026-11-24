@@ -100,7 +100,7 @@ export function activeTab(layout: Layout): Tab {
   return layout.tabs.find((tab) => tab.id === layout.activeTabId) ?? layout.tabs[0]!;
 }
 
-export function tabFocusedLeaf(tab: Tab): Leaf | null {
+function tabFocusedLeaf(tab: Tab): Leaf | null {
   return findLeaf(tab.root, tab.focusedPaneId);
 }
 
@@ -133,6 +133,21 @@ function mapNode(node: PaneNode, fn: (node: PaneNode) => PaneNode): PaneNode {
     ? { ...node, children: node.children.map((c) => mapNode(c, fn)) }
     : node;
   return fn(mapped);
+}
+
+/** Rewrites every leaf of every tab; returns the same layout when no leaf changes. */
+export function mapLeaves(layout: Layout, fn: (leaf: Leaf) => Leaf): Layout {
+  let changed = false;
+  const tabs = layout.tabs.map((tab) => ({
+    ...tab,
+    root: mapNode(tab.root, (node) => {
+      if (isSplit(node)) return node;
+      const next = fn(node);
+      changed ||= next !== node;
+      return next;
+    }),
+  }));
+  return changed ? { ...layout, tabs } : layout;
 }
 
 /** Merges a child split into a parent of the same axis, so the tree stays canonical. */
@@ -404,7 +419,9 @@ export function closeTab(layout: Layout, tabId: string): Layout | null {
   if (index === -1) return layout;
   const tabs = layout.tabs.filter((tab) => tab.id !== tabId);
   if (tabs.length === 0) return null;
-  if (layout.activeTabId !== tabId) return { ...layout, tabs };
+  if (layout.activeTabId !== tabId) {
+    return { ...layout, tabs, lastTabId: layout.lastTabId === tabId ? null : layout.lastTabId };
+  }
   const fallback = tabs.find((tab) => tab.id === layout.lastTabId) ?? tabs[Math.max(0, index - 1)]!;
   return { tabs, activeTabId: fallback.id, lastTabId: null };
 }

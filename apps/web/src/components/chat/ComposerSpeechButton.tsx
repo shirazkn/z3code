@@ -121,7 +121,7 @@ export function ComposerSpeechButton(props: {
     <ShortcutTooltip label={label} shortcut={props.shortcutLabel}>
       <Button
         type="button"
-        size={props.size === "compact" ? "icon-xs" : "icon-sm"}
+        size={props.size === "compact" ? "icon-micro" : "icon-sm"}
         variant="ghost"
         aria-label={label}
         disabled={props.disabled}

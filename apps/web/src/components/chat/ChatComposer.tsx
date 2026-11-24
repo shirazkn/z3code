@@ -3805,7 +3805,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
               <div
                 data-chat-composer-footer="true"
                 className={cn(
-                  "flex min-w-0 flex-nowrap items-center overflow-visible px-2 pb-2",
+                  "flex min-w-0 flex-nowrap items-center overflow-visible px-1.5 pb-1.5",
                   pendingUserInputs.length > 0 && "pt-2",
                   showMobilePendingAnswerActions &&
                     speechInput.state.phase === "idle" &&
@@ -3881,6 +3881,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                     {speechInput.available ? (
                       <>
                         <ComposerSpeechRecordingPill
+                          size="compact"
                           state={speechInput.state}
                           progress={null}
                           finishShortcutLabel={dictationShortcutLabel}
@@ -3894,6 +3895,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                           onSkipPostProcessing={() => speechInput.skipPostProcessing()}
                         />
                         <ComposerSpeechButton
+                          size="compact"
                           state={speechInput.state}
                           shortcutLabel={dictationShortcutLabel}
                           disabled={dictationDisabled}

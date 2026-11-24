@@ -12,11 +12,12 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 
 ## Workspace
 
-- A tab holds a tiling of panes; a pane shows one thread. A thread is open in at most one pane.
-- The sidebar puts a small dot on each thread that is open in a pane. Clicking a thread opens it in the focused pane, or, when it is already open, goes to its pane (switching tabs if needed).
-- With two or more tabs (or in tab mode), a tab strip sits in the title bar row. A tab is named after its focused pane's thread until you rename it (double-click, or Cmd+T r). Its glyph shows the tiling; on hover it turns into a close button. + opens a tab.
-- In a split, the focused pane reads at higher contrast and the others fade back. While a mode is on, everything but the focused pane dims. The lock has no visual cue.
-- Splits and tabbed views use one-line pane headers and narrow side gutters. Every color comes from the active theme.
+- A tab holds a tiling of panes; a pane shows one thread. A thread is open in at most one pane: clicking it in the sidebar opens it in the focused pane, or goes to its pane (switching tabs) when it is already open.
+- The tab bar is the top row. Tabs are named Tab 1, Tab 2… until you rename them (double-click, or Cmd+T r); hover shows a close button; + opens a tab. While a mode is on, the bar's right end names it and lists its keys; Locked shows while the lock is on.
+- Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only.
+- The focused pane draws its text at full strength. In a split the other panes fade back; a mode fades them further and dims the sidebar.
+- UI text runs one step under the chat text. Every color comes from the active theme.
+- The first launch selects the z3 theme, the wide chat width and the grouped sidebar; Settings can change them.
 
 ## Keys
 
@@ -43,7 +44,8 @@ Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Sh
 - `main` = `v0.1.11` + `z3: app identity` + the z3 commit(s). Remotes: `upstream` (pingdotgg/t3code, never push, never push tags) and `origin`.
 - New code lives in `apps/web/src/z3/`. Upstream files carry small edits only:
   - `routes/_chat.tsx`: `PaneHost` replaces the one `ThreadRouteView`; `Z3Home` wraps home.
-  - `components/ThreadRouteView.tsx`: `passive` (a pane without focus is a background thread and leaves the route alone).
+  - `components/ThreadRouteView.tsx`: `passive` (a pane without focus is a background thread and leaves the route alone); `onUnavailable` (a pane drops a thread it cannot show instead of going home).
+  - `components/chat/{ChatComposer,ComposerControl,ComposerControlsBar,ComposerPrimaryActions,ComposerAttachmentStrip,ComposerSpeechButton,ProviderModelPicker}.tsx`: the compact composer footer (20px controls, 11px text).
   - `components/ChatView.tsx`: four window-level composer-focus and paste listeners also stand down for a background thread.
   - `state/server.ts`: `remapStockKeys` on the app's keybinding list.
   - `components/chat/TimelineWorkGroupRows.tsx`: the working row label (`Z3Working`).

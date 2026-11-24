@@ -1,62 +1,23 @@
-import { scopedThreadKey } from "@t3tools/client-runtime/environment";
-import {
-  Columns2Icon,
-  Columns3Icon,
-  LayoutGridIcon,
-  LayoutPanelLeftIcon,
-  PlusIcon,
-  Rows2Icon,
-  Rows3Icon,
-  SquareIcon,
-} from "lucide-react";
+import { PlusIcon, XIcon } from "lucide-react";
 
-import { Button } from "../components/ui/button";
-import { PanelTabCloseButton } from "../components/ui/panel-tab-close-button";
 import { useComposerHandleContext } from "../composerHandleContext";
 import { isElectron } from "../env";
 import { cn } from "../lib/utils";
-import { useQuietThreadShell } from "../state/entities";
 import { COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS } from "../workspaceTitlebar";
 import { activateTabById, closeTabById, renameActiveTab, runAction } from "./actions";
-import type { Mode } from "./keymap";
-import { isSplit, leaves, shapeOf, tabFocusedLeaf, type Layout, type Tab } from "./layout";
+import { MODE_HINTS, type Mode } from "./keymap";
+import type { Layout, Tab } from "./layout";
 import { setMode, useZ3Store } from "./store";
 
-/** Tabs show with two or more, and in tab mode so a lone tab can be seen and renamed. */
-export function tabStripVisible(layout: Layout, mode: Mode): boolean {
-  return layout.tabs.length > 1 || mode === "tab" || mode === "renameTab";
-}
-
-/** An unnamed tab takes the title of its focused pane's thread, as a terminal tab does. */
-function useTabLabel(tab: Tab): string {
-  const target = tabFocusedLeaf(tab)?.target;
-  const shell = useQuietThreadShell(target?.kind === "server" ? target.threadRef : null);
-  if (tab.name) return tab.name;
-  if (shell) return shell.title;
-  return target?.kind === "server" ? "Thread" : "New thread";
-}
-
-/** A glyph of the tab's tiling. */
-function LayoutGlyph({ tab }: { tab: Tab }) {
-  const count = leaves(tab.root).length;
-  const flat = (axis: string) =>
-    shapeOf(tab.root) === `${axis}(${Array(count).fill("•").join(",")})`;
-  const Icon =
-    count === 1
-      ? SquareIcon
-      : flat("row")
-        ? count === 2
-          ? Columns2Icon
-          : Columns3Icon
-        : flat("column")
-          ? count === 2
-            ? Rows2Icon
-            : Rows3Icon
-          : isSplit(tab.root) && tab.root.axis === "row" && !isSplit(tab.root.children[0]!)
-            ? LayoutPanelLeftIcon
-            : LayoutGridIcon;
-  return <Icon className="size-3" />;
-}
+const MODE_NAME: Partial<Record<Mode, string>> = {
+  locked: "Locked",
+  pane: "Pane",
+  tab: "Tab",
+  resize: "Resize",
+  move: "Move",
+  scroll: "Scroll",
+  session: "Session",
+};
 
 function TabRenameInput({ tab, placeholder }: { tab: Tab; placeholder: string }) {
   const composer = useComposerHandleContext();
@@ -80,84 +41,104 @@ function TabRenameInput({ tab, placeholder }: { tab: Tab; placeholder: string })
   );
 }
 
-function TabItem({ tab, active }: { tab: Tab; active: boolean }) {
+// All-caps text sits on its cap height, so it centers optically; it would clip descenders.
+const CAPS_TRIM = "[text-box:trim-both_cap_alphabetic]";
+
+function TabItem({ tab, index, active }: { tab: Tab; index: number; active: boolean }) {
   const renaming = useZ3Store((state) => active && state.mode === "renameTab");
-  const label = useTabLabel(tab);
+  // Zellij's default tab name.
+  const label = tab.name ?? `Tab ${index + 1}`;
   return (
     <div
       data-active-tab={active}
       className={cn(
-        "group/tab flex h-6 min-w-16 max-w-44 shrink items-center gap-1 rounded-md pr-2 pl-1.5 text-xs",
+        "group/tab relative flex h-5 min-w-14 max-w-40 shrink items-center rounded-md px-4",
         isElectron && "[-webkit-app-region:no-drag]",
         active
-          ? "bg-accent text-foreground"
-          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+          ? "bg-foreground/10 text-foreground"
+          : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
       )}
     >
-      <PanelTabCloseButton label={`Close ${label}`} onClick={() => closeTabById(tab.id)}>
-        <LayoutGlyph tab={tab} />
-      </PanelTabCloseButton>
+      <button
+        type="button"
+        aria-label={`Close ${label}`}
+        className="absolute start-0.5 hidden size-4 cursor-pointer items-center justify-center rounded-sm text-muted-foreground hover:bg-foreground/10 hover:text-foreground focus-visible:flex group-hover/tab:flex"
+        onClick={() => closeTabById(tab.id)}
+      >
+        <XIcon className="size-3" />
+      </button>
       {renaming ? (
         <TabRenameInput tab={tab} placeholder={label} />
       ) : (
         <button
           type="button"
-          className="flex min-w-0 cursor-pointer items-center"
+          className="flex min-w-0 flex-1 cursor-pointer justify-center"
           onClick={() => activateTabById(tab.id)}
           onDoubleClick={() => {
             activateTabById(tab.id);
             setMode("renameTab");
           }}
         >
-          <span className="truncate">{label}</span>
+          <span className="truncate leading-none">{label}</span>
         </button>
       )}
     </div>
   );
 }
 
-/** The tabs, in the title bar row above the panes, styled as T3's panel tabs. */
-export function TabStrip({ layout }: { layout: Layout }) {
+/** The mode's name and keys, shown while a mode is on; Zellij's status bar, in one line. */
+function ModeLabel() {
   const mode = useZ3Store((state) => state.mode);
-  if (!tabStripVisible(layout, mode)) return null;
+  const name = MODE_NAME[mode];
+  if (name === undefined) return null;
+  const hints = mode === "locked" ? [] : MODE_HINTS[mode as keyof typeof MODE_HINTS];
   return (
-    <div
-      data-z3-tabs
-      className={cn(
-        "flex h-[var(--workspace-topbar-height)] min-h-[var(--workspace-topbar-height)] shrink-0 items-center gap-1 border-b pr-3 pl-2",
-        isElectron && "drag-region",
-        COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS,
-      )}
-    >
-      <div className="flex min-w-0 items-center gap-1">
-        {layout.tabs.map((tab) => (
-          <TabItem key={tab.id} tab={tab} active={tab.id === layout.activeTabId} />
-        ))}
-      </div>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        aria-label="New tab"
-        onClick={() => runAction({ do: "newTab" })}
+    <div data-z3-mode-label className="flex min-w-0 shrink items-center gap-2">
+      <span
+        className={cn(
+          "shrink-0 rounded-sm bg-primary px-1.5 py-1 font-semibold text-3xs text-primary-foreground uppercase tracking-wider",
+          CAPS_TRIM,
+        )}
       >
-        <PlusIcon />
-      </Button>
+        {name}
+      </span>
+      <span className="truncate text-muted-foreground leading-none">
+        {hints.map(([keys, action]) => `${keys} ${action}`).join(" · ")}
+      </span>
     </div>
   );
 }
 
-/** A dot on each sidebar thread that is open in a pane, as the Dock marks open apps. */
-export function OpenThreadMarks({ layout }: { layout: Layout }) {
-  const rows = layout.tabs.flatMap((tab) =>
-    leaves(tab.root).flatMap((leaf) =>
-      leaf.target?.kind === "server"
-        ? [`[data-sidebar-row="${CSS.escape(scopedThreadKey(leaf.target.threadRef))}"]`]
-        : [],
-    ),
+/** The window's top row: the tabs, and the mode while one is on. */
+export function TabStrip({ layout }: { layout: Layout }) {
+  return (
+    <div
+      data-z3-tabs
+      className={cn(
+        "flex shrink-0 items-center gap-1 border-b pe-3 ps-2 text-2xs",
+        isElectron && "drag-region",
+        COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS,
+      )}
+    >
+      <div className="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]">
+        {layout.tabs.map((tab, index) => (
+          <TabItem key={tab.id} tab={tab} index={index} active={tab.id === layout.activeTabId} />
+        ))}
+      </div>
+      <button
+        type="button"
+        aria-label="New tab"
+        className={cn(
+          "flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
+          isElectron && "[-webkit-app-region:no-drag]",
+        )}
+        onClick={() => runAction({ do: "newTab" })}
+      >
+        <PlusIcon className="size-3.5" />
+      </button>
+      <div className="ms-auto flex min-w-0 justify-end ps-4">
+        <ModeLabel />
+      </div>
+    </div>
   );
-  if (rows.length === 0) return null;
-  return <style>{`:is(${rows.join(",")})::after { ${OPEN_DOT} }`}</style>;
 }
-
-const OPEN_DOT =
-  'content: ""; position: absolute; top: 50%; left: 3px; width: 4px; height: 4px; margin-top: -2px; border-radius: 9999px; background: currentColor; opacity: 0.5;';

@@ -5,7 +5,7 @@ import { visibilityParentKey } from "@t3tools/client-runtime/state/threads";
 import type { ScopedThreadRef } from "@t3tools/contracts";
 import * as Option from "effect/Option";
 import { Navigate, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { isValidElement, useEffect, useState } from "react";
 
 import ChatView from "./ChatView";
 import { BackgroundThreadContext, HiddenThreadContext } from "./chat/backgroundThread";
@@ -55,11 +55,14 @@ export function ThreadRouteView({
   target,
   background = false,
   passive = false,
+  onUnavailable,
 }: {
   target: ThreadRouteTarget;
   background?: boolean;
   /** A z3 pane without focus: a background thread that leaves the route alone. */
   passive?: boolean;
+  /** A z3 pane: called in place of going home when the target cannot show. */
+  onUnavailable?: () => void;
 }) {
   const navigate = useNavigate();
   const draftId = target.kind === "draft" ? target.draftId : null;
@@ -151,8 +154,9 @@ export function ThreadRouteView({
     if (renderState === "missing") {
       const { clearPendingFileDropsForThread } = useSidebarPendingFileDropStore.getState();
       clearPendingFileDropsForThread(target.threadRef);
-      if (environmentHasAnyThreads && !background && !passive) {
-        void navigate({ to: "/", replace: true });
+      if (environmentHasAnyThreads && !background) {
+        if (onUnavailable) onUnavailable();
+        else if (!passive) void navigate({ to: "/", replace: true });
       }
     }
   }, [
@@ -160,6 +164,7 @@ export function ThreadRouteView({
     bootstrapComplete,
     environmentHasAnyThreads,
     navigate,
+    onUnavailable,
     passive,
     renderState,
     target,
@@ -235,6 +240,12 @@ export function ThreadRouteView({
     );
   }
 
+  const goesHome = isValidElement<{ to?: string }>(redirect) && redirect.props.to === "/";
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- a z3 pane gives up a target it cannot show
+  useEffect(() => {
+    if (goesHome && !background) onUnavailable?.();
+  }, [background, goesHome, onUnavailable]);
+
   return (
     <SidebarInset
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
@@ -243,7 +254,7 @@ export function ThreadRouteView({
       <BackgroundThreadContext value={background || passive}>
         <HiddenThreadContext value={background}>{view}</HiddenThreadContext>
       </BackgroundThreadContext>
-      {background || passive ? null : redirect}
+      {background || passive || (goesHome && onUnavailable) ? null : redirect}
     </SidebarInset>
   );
 }

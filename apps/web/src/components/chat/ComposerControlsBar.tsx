@@ -145,7 +145,7 @@ export function ComposerControlsBar(props: {
     collapsed: composerControlsCollapsed,
     measuredHiddenBlockCount,
   });
-  const controlSize = composerControlsCollapsed ? "xs" : "sm";
+  const controlSize = "xs";
   const gt = useGT();
   const m = useMessages();
   const applyThreadModelPick = useApplyThreadModelPick();

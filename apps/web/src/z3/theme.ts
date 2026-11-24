@@ -54,6 +54,14 @@ const Z3_THEME: ThemeDefinition = {
 
 /** Installs the z3 theme, and selects it once with the system appearance, as Ghostty does. */
 export function adoptZ3Theme(): void {
+  try {
+    installZ3Theme();
+  } catch (error) {
+    console.warn("[z3] theme not installed; stock theme stays", error);
+  }
+}
+
+function installZ3Theme(): void {
   const adopted = Number(window.localStorage.getItem(ADOPTED_KEY) ?? 0);
   if (adopted === THEME_VERSION) return;
   if (getCustomThemes().some((theme) => theme.id === THEME_ID)) {

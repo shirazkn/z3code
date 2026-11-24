@@ -8,7 +8,7 @@ import {
   useComposerDraftStore,
 } from "../composerDraftStore";
 import type { Mode } from "./keymap";
-import { createLayout, isLayout, isMulti, leaves, type Layout } from "./layout";
+import { createLayout, isLayout, isMulti, leaves, mapLeaves, type Layout } from "./layout";
 
 interface Z3State {
   readonly layout: Layout;
@@ -87,6 +87,19 @@ function syncPaneDrafts(layout: Layout): void {
     );
   }
 }
+
+// A sent draft becomes a server thread. Only the focused pane follows the route there, so every
+// pane showing the draft is retargeted here.
+useComposerDraftStore.subscribe((state, previous) => {
+  if (state.promotedDraftRedirects === previous.promotedDraftRedirects) return;
+  const { layout } = useZ3Store.getState();
+  const next = mapLeaves(layout, (leaf) => {
+    const threadRef =
+      leaf.target?.kind === "draft" ? state.promotedDraftRedirects[leaf.target.draftId] : undefined;
+    return threadRef === undefined ? leaf : { ...leaf, target: { kind: "server", threadRef } };
+  });
+  if (next !== layout) useZ3Store.setState({ layout: next });
+});
 
 useZ3Store.subscribe((state, previous) => {
   if (state.layout !== previous.layout) syncPaneDrafts(state.layout);

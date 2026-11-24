@@ -130,7 +130,7 @@ it("tabs show in the strip, and a thread lives in one pane: opening it again jum
   await using _screen = screen;
   const threadPath = router.state.location.pathname;
   const stripTabs = () => [...document.querySelectorAll("[data-z3-tabs] [data-active-tab]")];
-  expect(stripTabs()).toHaveLength(0);
+  expect(stripTabs().map((tab) => tab.textContent)).toEqual(["Tab 1"]);
 
   await press("{Control>}t{/Control}n");
   await vi.waitFor(() =>

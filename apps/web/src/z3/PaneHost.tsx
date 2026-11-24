@@ -5,7 +5,7 @@ import { ThreadRouteView } from "../components/ThreadRouteView";
 import { SidebarInset } from "../components/ui/sidebar";
 import { ComposerHandleContext, useComposerHandleContext } from "../composerHandleContext";
 import type { ThreadRouteTarget } from "../threadRoutes";
-import { focusPaneById, locationOf, registerHost } from "./actions";
+import { dropPaneTarget, focusPaneById, locationOf, registerHost } from "./actions";
 import "./keys";
 import {
   activeTab,
@@ -18,7 +18,7 @@ import {
   targetKey,
 } from "./layout";
 import { useZ3Store } from "./store";
-import { OpenThreadMarks, TabStrip, tabStripVisible } from "./TabStrip";
+import { TabStrip } from "./TabStrip";
 import "./z3.css";
 
 const FULL: Rect = { left: 0, top: 0, width: 1, height: 1 };
@@ -36,7 +36,6 @@ export function PaneHost({
   const composer = useComposerHandleContext();
   const stored = useZ3Store((state) => state.layout);
   const routeKey = useZ3Store((state) => state.routeKey);
-  const mode = useZ3Store((state) => state.mode);
   const key = targetKey(target);
   // Derived in render, so the route's thread shows in its pane on the first frame.
   const layout = key === routeKey ? stored : followRoute(stored, target);
@@ -67,17 +66,13 @@ export function PaneHost({
   const cells = leaves(tab.root);
   const all = rects(tab.root);
   const multi = cells.length > 1;
-  // Without the tab strip, the top-left pane's header sits under the window controls.
-  const stripShown = tabStripVisible(layout, mode);
   return (
     <SidebarInset
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
       inert={background}
       data-z3-host
       data-z3-split={multi || undefined}
-      data-z3-strip={stripShown || undefined}
     >
-      <OpenThreadMarks layout={layout} />
       <TabStrip layout={layout} />
       <div data-z3-grid className="relative min-h-0 flex-1">
         {cells.map((leaf) => {
@@ -88,7 +83,6 @@ export function PaneHost({
               key={leaf.id}
               leaf={leaf}
               rect={tab.fullscreen && focused ? FULL : rect}
-              corner={!stripShown && rect.left === 0 && rect.top === 0}
               focused={focused}
               multi={multi}
               hidden={tab.fullscreen && !focused}
@@ -108,11 +102,9 @@ function PaneCell({
   multi,
   hidden,
   background,
-  corner,
 }: {
   leaf: Leaf;
   rect: Rect;
-  corner: boolean;
   focused: boolean;
   multi: boolean;
   hidden: boolean;
@@ -125,7 +117,6 @@ function PaneCell({
       data-z3-cell={leaf.id}
       data-focused={focused || undefined}
       data-multi={multi || undefined}
-      data-z3-corner={corner || undefined}
       data-z3-inner-left={(!hidden && rect.left > 0) || undefined}
       data-z3-inner-top={(!hidden && rect.top > 0) || undefined}
       hidden={hidden}
@@ -142,9 +133,14 @@ function PaneCell({
       {/* Only the focused pane's composer answers the app-wide composer handle. */}
       <ComposerHandleContext value={focused ? composer : null}>
         {leaf.target ? (
-          <ThreadRouteView target={leaf.target} background={background} passive={!focused} />
+          <ThreadRouteView
+            target={leaf.target}
+            background={background}
+            passive={!focused}
+            onUnavailable={() => dropPaneTarget(leaf.id)}
+          />
         ) : (
-          <div className="m-auto text-muted-foreground text-xs">New pane</div>
+          <div className="m-auto text-muted-foreground text-xs">New thread</div>
         )}
       </ComposerHandleContext>
     </div>

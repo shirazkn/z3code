@@ -2,8 +2,11 @@ import { DraftId } from "../composerDraftStore";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  activateTab,
+  addTab,
   breakPane,
   closePane,
+  closeTab,
   createLayout,
   createLeaf,
   createTab,
@@ -70,6 +73,16 @@ describe("closePane", () => {
     expect(rects(closed.root).get(top)).toEqual({ left: 0.5, top: 0, width: 0.5, height: 1 });
     expect(closed.focusedPaneId).toBe(top);
     expect(closePane(createTab(createLeaf(null)), "missing")).not.toBeNull();
+  });
+});
+
+describe("closeTab", () => {
+  it("forgets a closed background tab as the last tab", () => {
+    const one = createLayout(draft("a"));
+    const two = addTab(one, createTab(createLeaf(draft("b"))));
+    const back = activateTab(two, one.tabs[0]!.id);
+    expect(back.lastTabId).toBe(two.activeTabId);
+    expect(closeTab(back, two.activeTabId)!.lastTabId).toBeNull();
   });
 });
 

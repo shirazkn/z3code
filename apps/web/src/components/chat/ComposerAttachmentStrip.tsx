@@ -764,7 +764,7 @@ export function ComposerAttachButton({
             <Button
               type="button"
               variant="ghost"
-              size="icon-sm"
+              size="icon-micro"
               onPointerDown={(event) => event.preventDefault()}
               onClick={() => inputRef.current?.click()}
               aria-label={gt("Attach files")}

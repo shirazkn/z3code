@@ -155,6 +155,7 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
   // Touch opens on the popup itself so the on-screen keyboard stays down until the search is tapped.
   const isCoarsePointer = useMediaQuery({ pointer: "coarse" });
   const size = props.size ?? "sm";
+  const iconSize = size === "xs" ? "size-3" : "size-4";
   const docked = props.effortColumn !== undefined;
 
   const activeEntry =
@@ -401,8 +402,11 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
                       accentColor={selection.entry.accentColor}
                       acpRegistryAgentId={selection.entry.acpRegistryAgentId}
                       acpRegistryIconUrl={selection.entry.acpRegistryIconUrl}
-                      className="size-4 rounded-full bg-(--chat-composer-glass-surface,var(--background)) ring-2 ring-(--chat-composer-glass-surface,var(--background))"
-                      iconClassName="size-4"
+                      className={cn(
+                        iconSize,
+                        "rounded-full bg-(--chat-composer-glass-surface,var(--background)) ring-2 ring-(--chat-composer-glass-surface,var(--background))",
+                      )}
+                      iconClassName={iconSize}
                     />
                   ) : null,
                 )}
@@ -422,8 +426,8 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
                 acpRegistryAgentId={activeEntry.acpRegistryAgentId}
                 acpRegistryIconUrl={activeEntry.acpRegistryIconUrl}
                 showBadge={showInstanceBadge}
-                className="size-4"
-                iconClassName={cn("size-4", props.activeProviderIconClassName)}
+                className={iconSize}
+                iconClassName={cn(iconSize, props.activeProviderIconClassName)}
                 indicatorBackground={props.instanceIndicatorBackground ?? "var(--contrast-input)"}
                 badgeClassName={cn(
                   "right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 px-0.5 text-5xs",

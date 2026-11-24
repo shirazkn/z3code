@@ -22,6 +22,7 @@ import {
   focusPane,
   isSplit,
   leaves,
+  mapLeaves,
   type Layout,
   type Leaf,
   moveTab,
@@ -37,13 +38,14 @@ import {
   updateTab,
   activateTab,
 } from "./layout";
-import { useZ3Store } from "./store";
+import { setMode, useZ3Store } from "./store";
 
 let host: { readonly router: AnyRouter } | null = null;
 
 /** The pane host registers while it shows the thread view; keys act only then. */
 export function registerHost(router: AnyRouter | null): void {
   host = router === null ? null : { router };
+  if (router === null && useZ3Store.getState().mode !== "locked") setMode("normal");
 }
 
 export function isHostActive(): boolean {
@@ -91,6 +93,10 @@ function commit(next: Layout): void {
   }
 }
 
+// While the stock flow creates a new pane's draft, focus stays on that pane, so the draft's route
+// lands in it (followRoute fills the focused pane).
+let creating = false;
+
 /** The stock new-thread flow opens a draft; the route then places it in the focused empty pane. */
 function startThread(layout: Layout, source: Leaf | null): void {
   const project = projectOf(source) ?? anyProject(layout);
@@ -99,7 +105,10 @@ function startThread(layout: Layout, source: Leaf | null): void {
     console.info("[z3] new pane stays empty: no project to start a thread in");
     return;
   }
-  void createNewThreadHandler(host.router)(project);
+  creating = true;
+  void createNewThreadHandler(host.router)(project).finally(() => {
+    creating = false;
+  });
 }
 
 function gridSize() {
@@ -136,6 +145,10 @@ function clickInFocused(selector: string, pick: "first" | "last" = "first"): boo
 
 /** Runs one keymap action. Returns false when it had nothing to act on. */
 export function runAction(action: Action): boolean {
+  if (creating) {
+    console.info("[z3] key ignored: a new pane's thread is being created", action);
+    return false;
+  }
   const { layout } = useZ3Store.getState();
   const tab = activeTab(layout);
   const focused = tab.focusedPaneId;
@@ -301,11 +314,29 @@ function returnFocusToPane(): boolean {
   return true;
 }
 
+/** A pane whose thread cannot show (deleted, archived, hidden) closes, or empties if it is alone. */
+export function dropPaneTarget(leafId: string): void {
+  const { layout } = useZ3Store.getState();
+  const tab = activeTab(layout);
+  if (!leaves(tab.root).some((leaf) => leaf.id === leafId)) return;
+  console.info("[z3] pane target unavailable; dropping it", leafId);
+  const remaining = closePane(tab, leafId);
+  commit(
+    remaining === null
+      ? mapLeaves(layout, (leaf) => (leaf.id === leafId ? { ...leaf, target: null } : leaf))
+      : updateTab(layout, tab.id, () => remaining),
+  );
+}
+
 /** A pointer press or focus inside a passive pane makes it the focused pane. */
 export function focusPaneById(leafId: string): void {
   const { layout } = useZ3Store.getState();
   const tab = activeTab(layout);
   if (tab.focusedPaneId === leafId) return;
+  if (creating) {
+    console.info("[z3] focus stays: a new pane's thread is being created", leafId);
+    return;
+  }
   commit(updateTab(layout, tab.id, (t) => focusPane(t, leafId)));
   useZ3Store.setState({ focusRequest: null });
 }

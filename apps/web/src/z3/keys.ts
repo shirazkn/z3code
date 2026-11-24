@@ -3,8 +3,12 @@ import { setFirstKeyHandler } from "./firstKeyListener";
 import { resolveKey } from "./keymap";
 import { setMode, useZ3Store } from "./store";
 
+// Dialogs, menus, lists and the terminal keep their keys (Home, End, Escape, mode keys).
+const OWN_KEYS = '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], .xterm';
+
 function onKeyDown(event: KeyboardEvent): void {
   if (event.isComposing || !isHostActive()) return;
+  if (event.target instanceof Element && event.target.closest(OWN_KEYS)) return;
   const resolution = resolveKey(useZ3Store.getState().mode, event, navigator.platform);
   if (resolution.kind === "pass") return;
   if (resolution.kind === "bind") {
