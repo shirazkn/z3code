@@ -470,6 +470,8 @@ export function AppSidebarLayout({
       <SidebarProvider
         className="h-dvh! min-h-0!"
         data-panel-animations={routePanelAnimationsActive ? "true" : "false"}
+        // z3: the tab bar keeps the title bar's height only beside the window buttons.
+        data-native-window-controls={isMacosDesktop && !isWindowFullscreen ? "" : undefined}
         storageKey="chat_thread_sidebar_open"
         style={sidebarProviderStyle}
       >

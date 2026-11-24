@@ -1,5 +1,5 @@
 import { Navigate, useLocation, useRouter } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
 import { ThreadRouteView } from "../components/ThreadRouteView";
 import { SidebarInset } from "../components/ui/sidebar";
@@ -36,7 +36,6 @@ export function PaneHost({
   background: boolean;
 }) {
   const router = useRouter();
-  const composer = useComposerHandleContext();
   const stored = useZ3Store((state) => state.layout);
   const routeKey = useZ3Store((state) => state.routeKey);
   const key = targetKey(target);
@@ -56,15 +55,6 @@ export function PaneHost({
   }, [background, router]);
 
   const tab = activeTab(layout);
-  const focusedId = tab.focusedPaneId;
-  const focusedReady = focusedLeaf(layout)?.target != null;
-  const focusRequest = useZ3Store((state) => state.focusRequest);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- moves DOM focus into the pane a key focused, once its composer mounts
-  useEffect(() => {
-    if (focusRequest !== focusedId || !focusedReady) return;
-    useZ3Store.setState({ focusRequest: null });
-    composer?.current?.focusAtEnd();
-  }, [composer, focusRequest, focusedId, focusedReady]);
 
   // Derived in render: the tabs last shown stay mounted, so a switch back paints at once.
   const [recent, setRecent] = useState<ReadonlyArray<string>>([tab.id]);
@@ -141,6 +131,17 @@ function PaneCell({
   background: boolean;
 }) {
   const composer = useComposerHandleContext();
+  // The focus cue paints at once; the thread views take their new role in a later render.
+  const live = useDeferredValue(focused);
+  const asleep = useDeferredValue(background);
+  const ready = leaf.target !== null;
+  const requested = useZ3Store((state) => state.focusRequest === leaf.id);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- moves DOM focus into the pane a key focused, once its composer answers the handle
+  useEffect(() => {
+    if (!requested || !live || !focused || !ready) return;
+    useZ3Store.setState({ focusRequest: null });
+    composer?.current?.focusAtEnd();
+  }, [composer, focused, live, ready, requested]);
   const claim = focused || background ? undefined : () => focusPaneById(leaf.id);
   return (
     <div
@@ -161,12 +162,12 @@ function PaneCell({
       onFocusCapture={claim}
     >
       {/* Only the focused pane's composer answers the app-wide composer handle. */}
-      <ComposerHandleContext value={focused ? composer : null}>
+      <ComposerHandleContext value={live ? composer : null}>
         {leaf.target ? (
           <ThreadRouteView
             target={leaf.target}
-            background={background}
-            passive={!focused}
+            background={asleep}
+            passive={!live}
             onUnavailable={() => dropPaneTarget(leaf.id)}
           />
         ) : (

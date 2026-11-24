@@ -34,8 +34,16 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   --z3-bar: 1.75rem;
 }
 
-[data-sidebar-state="collapsed"] [data-z3-host] {
+[data-sidebar-state="collapsed"][data-native-window-controls] [data-z3-host] {
   --z3-bar: var(--workspace-topbar-height);
+}
+
+/* With no window buttons the sidebar toggle fits the thin bar. */
+[data-z3-panes]
+  [data-sidebar-state="collapsed"]:not([data-native-window-controls])
+  [data-sidebar-control] {
+  height: 1.75rem;
+  --workspace-titlebar-control-size: 1.25rem;
 }
 
 [data-z3-tabs] {
@@ -139,7 +147,7 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  transition: background-color 150ms ease-out;
+  transition: background-color 80ms ease-out;
 }
 
 [data-z3-split] [data-z3-cell]:not([data-focused])::after {
@@ -155,7 +163,7 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 }
 
 [data-sidebar="sidebar"] {
-  transition: opacity 150ms ease-out;
+  transition: opacity 80ms ease-out;
 }
 
 [data-z3-mode] [data-sidebar="sidebar"] {
@@ -219,7 +227,7 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   scale: 1.03;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.28);
   background-color: var(--color-sidebar-row-active);
-  transition-delay: 140ms;
+  transition-delay: 110ms;
 }
 
 [data-sidebar="sidebar"] [data-slot="sidebar-group"]:has([role="combobox"]) {
@@ -264,8 +272,8 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
 [data-z3-cell],
 [data-z3-mode-label] {
   transition:
-    opacity 120ms ease-out,
-    translate 120ms ease-out;
+    opacity 70ms ease-out,
+    translate 70ms ease-out;
 
   @starting-style {
     opacity: 0;

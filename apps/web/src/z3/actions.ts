@@ -47,6 +47,7 @@ let host: { readonly router: AnyRouter } | null = null;
 /** The pane host registers while it shows the thread view; keys act only then. */
 export function registerHost(router: AnyRouter | null): void {
   host = router === null ? null : { router };
+  document.documentElement.toggleAttribute("data-z3-panes", router !== null);
   if (router === null && useZ3Store.getState().mode !== "locked") setMode("normal");
 }
 
@@ -91,8 +92,28 @@ function commit(next: Layout): void {
   if (leaf.target === null) {
     startThread(next, focusedLeaf(previous));
   } else if (targetKey(leaf.target) !== routeKey) {
-    void host.router.navigate({ ...locationOf(leaf.target), replace: true } as never);
+    followFocus();
   }
+}
+
+let following = false;
+
+/**
+ * Moves the route to the focused pane's thread after the frame that shows the focus. A route
+ * change renders the sidebar and the thread views, which would hold that frame back.
+ */
+function followFocus(): void {
+  if (following) return;
+  following = true;
+  requestAnimationFrame(() =>
+    setTimeout(() => {
+      following = false;
+      const { layout, routeKey } = useZ3Store.getState();
+      const target = focusedLeaf(layout)?.target;
+      if (host === null || target == null || targetKey(target) === routeKey) return;
+      void host.router.navigate({ ...locationOf(target), replace: true } as never);
+    }),
+  );
 }
 
 // While the stock flow creates a new pane's draft, focus stays on that pane, so the draft's route

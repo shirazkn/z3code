@@ -15,8 +15,11 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - A tab holds a tiling of panes; a pane shows one thread. A thread is open in at most one pane. A click on a thread in a tab goes to its pane. A click on any other thread opens a menu of the tabs and New tab; Enter on its row opens it in the focused pane.
 - The sidebar lists the tabs first, in tab-bar order, each with the threads its panes show. Every other thread stays in one flat list below, without project folders. The sidebar reads the pane layout, so the two cannot differ.
 - Move a thread between tabs: drag its sidebar row onto a tab (in the sidebar or the tab bar) or onto + for a new tab, or right-click it and pick Open in tab / Move to tab. It takes a blank pane of that tab, else a new pane. Remove from tab, or a drop on the No tab strip, closes its pane; a tab closes with its last pane.
-- A sidebar thread row that is held lifts after 140 ms, to show it can move.
+- A sidebar thread row that is held lifts after 110 ms, to show it can move.
 - The dark variants of the built-in themes (T3 Chat, Grove, Ocean, Ember, Iris) have a much darker background (`packages/shared/src/themePalettes.ts`, with boot copies in `apps/web/index.html` and `apps/mobile/generated-uniwind-themes.css`).
+- A focus move or a tab switch paints first; the thread views and the route follow in a later render.
+- With the sidebar collapsed the tab bar stays 28 px, except beside the macOS window buttons (a window that is not full screen).
+- The first launch sets the glass opacity to 50%.
 - The four tabs shown last stay loaded, so a switch back does not load the threads again.
 - The tab bar is the top row. Tabs are named Tab 1, Tab 2… until you rename them (double-click, or Cmd+T r); hover shows a close button; + opens a tab. While a mode is on, the bar's right end names it and lists its keys; Locked shows while the lock is on.
 - Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only.
@@ -60,6 +63,8 @@ Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Sh
   - `vite.config.ts`: `apps/web/src/z3/**` is exempt from the translation lint.
   - `components/ChatView.browser.test.tsx`: its stash and right-panel chords moved off the mode keys.
   - `components/settings/KeybindingsSettings.tsx`: the Zellij modes section.
+  - `components/AppSidebarLayout.tsx`: `data-native-window-controls` on the sidebar wrapper.
+  - `components/chat/ComposerAttachmentStrip.tsx`: also the fainter attach icon.
   - `components/sidebar/SidebarChrome.tsx`: the Z3 wordmark (`z3/Z3Wordmark.tsx`) in place of T3's.
   - `components/Sidebar.tsx`: the tab groups (`z3/SidebarTabs.tsx`) lead the thread list and take their threads out of the stock rows; a drag onto a tab counts as a drag out of the list; the thread menu gets the tab entries; a click on a thread outside tabs opens the tab menu; the grouped sidebar lists threads flat (`FLAT_THREAD_LIST`). A drag of a tab's thread never reorders the stock list.
 - Update: `git fetch upstream --tags && git rebase --onto <new tag> v0.1.11 main`, then run `vp run typecheck` in `apps/web` and `vp test run src/z3` (unit and browser). Keep the base tag equal to the server version you pair with.
