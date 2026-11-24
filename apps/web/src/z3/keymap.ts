@@ -80,10 +80,14 @@ const focusBinds = (): Bind[] => [
 /** The Zellij default keymap with the deltas of the dotfiles `config.kdl`. */
 const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> = {
   normal: [
-    // dotfiles: Globe+arrow (Home End PageUp PageDown) and Ctrl+arrow move between panes only.
+    // dotfiles: Globe+arrow (Home End PageUp PageDown) and Ctrl+arrow focus a pane; left and
+    // right go to the next tab at the edge (Zellij's MoveFocusOrTab).
     ...(["left", "right", "up", "down"] as const).map((dir): Bind => ({
       keys: [GLOBE_ARROW[dir], `ctrl+arrow${dir}`],
-      action: { do: "focus", dir },
+      action:
+        dir === "left" || dir === "right"
+          ? { do: "focus", dir, orTab: true }
+          : { do: "focus", dir },
       always: true,
     })),
     // dotfiles (Ghostty): Cmd+Up/Down, and Cmd+Shift+[ ] for tabs.

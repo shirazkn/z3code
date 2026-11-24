@@ -38,7 +38,7 @@ The keymap is Zellij's default plus the dotfiles' `config.kdl` deltas, with the 
 
 Esc, Enter or the mode key again return to normal mode. A mode swallows the keys it does not bind.
 
-Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes only; with no pane that way they bring the keyboard back to the focused pane. Alt+N new pane, Alt+HJKL focus (Alt+H/L go to the next tab at the edge), Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Cmd+Up/Down focus, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] previous/next tab. Option+arrows stay the text field's word moves. Other normal-mode keys with nothing to act on keep their stock meaning.
+Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes. With no pane to the left or right they go to the previous or next tab; with no pane and no other tab they bring the keyboard back to the focused pane. Alt+N new pane, Alt+HJKL focus (Alt+H/L go to the next tab at the edge), Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Cmd+Up/Down focus, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] previous/next tab. Option+arrows stay the text field's word moves. Other normal-mode keys with nothing to act on keep their stock meaning.
 
 Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ]. macOS Hide keeps its menu item and loses Cmd+H.
 
