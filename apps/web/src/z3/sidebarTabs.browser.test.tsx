@@ -111,6 +111,26 @@ it("the sidebar lists each thread under its tab, a drag moves it, and a tab left
   expect(groups()).toHaveLength(1);
   await vi.waitFor(() => expect(row(second)).not.toBeNull());
   expect(groupOf(second)).toBeNull();
+  // Threads outside tabs are one flat list, and a click asks for the tab.
+  expect(document.querySelector('[data-testid="sidebar-project-folder"]')).toBeNull();
+  const at = center(row(second)!);
+  await act(() => {
+    pressRow(row(second)!.firstElementChild as HTMLElement, ...at);
+    row(second)!.firstElementChild!.dispatchEvent(pointer("pointerup", ...at));
+    row(second)!.firstElementChild!.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, detail: 1, clientX: at[0], clientY: at[1] }),
+    );
+  });
+  await expect.element(page.getByRole("menuitem", { name: "New tab" })).toBeVisible();
+  expect(
+    page
+      .getByRole("menuitem")
+      .elements()
+      .map((item) => item.textContent),
+  ).toEqual(["Tab 1", "New tab"]);
+  await userEvent.keyboard("{Escape}");
+  await expect.element(page.getByRole("menuitem", { name: "New tab" })).not.toBeInTheDocument();
+  expect(groupOf(second)).toBeNull();
 
   // A new tab keeps the tab it leaves mounted, out of sight and without focus.
   await userEvent.keyboard("{Control>}t{/Control}n");

@@ -34,7 +34,8 @@ vi.mock(import("~/rpc/requestLatencyState"), async (original) => ({
   trackRpcRequestSent: () => {},
 }));
 
-it("shows the titled preview inside and outside search results from a collapsed folder", async () => {
+// z3: the grouped sidebar has no project folders, so the dragged row is only a search result.
+it("shows the titled preview inside and outside search results", async () => {
   await page.viewport(1400, 900);
   const [first, second] = [threadWithHistory("visible", 1), threadWithHistory("search-target", 1)];
   using _environment = installFakeEnvironment([first, second]);
@@ -51,15 +52,6 @@ it("shows the titled preview inside and outside search results from a collapsed 
     // AppRoot brings its own router.
     router: false,
   });
-  const folder = page.getByRole("button", { name: /^render/ });
-  await expect.element(folder).toHaveAttribute("aria-expanded", "true");
-  // A removed row fades out as a clone without its test id, so match the live row only.
-  const secondRow = page.getByTestId("sidebar-row-folder").filter({ hasText: second.title });
-  await expect.element(secondRow).toBeInTheDocument();
-  // The shift guard drops pointer presses on a row that appeared under 500ms ago; keys pass.
-  folder.element().focus();
-  await userEvent.keyboard("{Enter}");
-  await expect.element(secondRow).not.toBeInTheDocument();
   await userEvent.fill(page.getByRole("combobox", { name: "Search threads" }), "search-target");
   const result = page.getByRole("option", { name: /Thread search-target/ });
   await expect.element(result).toBeVisible();

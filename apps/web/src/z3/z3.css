@@ -194,12 +194,32 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 }
 
 /* Dense sidebar: one-line thread rows at the tab bar's height, and a thin band for search. */
-[data-sidebar="sidebar"] [data-testid="sidebar-row-folder"] {
+[data-sidebar="sidebar"] :is([data-testid="sidebar-row-folder"], [data-testid="sidebar-row-slim"]) {
   height: 1.75rem;
 }
 
-[data-sidebar="sidebar"] li[data-thread-item]:has(> [data-testid="sidebar-row-folder"]) {
+[data-sidebar="sidebar"] li[data-thread-item]:not(:has([data-testid="sidebar-row-card"])) {
   contain-intrinsic-size: auto 1.75rem;
+}
+
+/* A held row lifts, to show it can move. The delay keeps a plain click still. */
+[data-sidebar="sidebar"] li[data-thread-item] > * {
+  transition:
+    scale 90ms ease-out,
+    box-shadow 90ms ease-out;
+}
+
+/* The row's own paint containment would clip the lift. */
+[data-sidebar="sidebar"] li[data-thread-item]:active {
+  content-visibility: visible;
+}
+
+[data-sidebar="sidebar"] li[data-thread-item]:active > * {
+  z-index: 1;
+  scale: 1.03;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.28);
+  background-color: var(--color-sidebar-row-active);
+  transition-delay: 140ms;
 }
 
 [data-sidebar="sidebar"] [data-slot="sidebar-group"]:has([role="combobox"]) {
@@ -259,6 +279,7 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-sidebar="sidebar"] li[data-thread-item] > *,
   [data-z3-cell],
   [data-z3-mode-label],
   [data-z3-cell]::after,

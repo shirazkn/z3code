@@ -273,9 +273,12 @@ import {
 } from "./sidebar/SidebarThreadRow";
 import { SidebarDraftBlock } from "./sidebar/SidebarDraftBlock";
 import {
+  FLAT_THREAD_LIST,
+  FLAT_THREAD_ROW,
   isOverSidebarTabDrop,
   isTabMenuId,
   paneThreadKey,
+  pickTab,
   runTabMenu,
   SidebarTabGroup,
   SidebarTabPaneRow,
@@ -1603,6 +1606,12 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
       return;
     }
     if (isTrailingDoubleClick(event.detail)) {
+      return;
+    }
+    // z3: a thread no pane shows asks for its tab; a thread in a tab goes to its pane.
+    if (!z3Tabs.tabOf.has(threadKey)) {
+      const row = event.currentTarget.getBoundingClientRect();
+      void pickTab(threadRef, { x: event.clientX, y: row.bottom }, z3Tabs.tabs);
       return;
     }
     navigateToThread(threadRef);
@@ -3453,13 +3462,16 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                         );
                         const isCard =
                           section === "active" || section === "pinned" || section === "working";
-                        const rowVariant = folderRow
-                          ? folderRowsMultiline
-                            ? "folder-multiline"
-                            : "folder"
-                          : isCard
-                            ? "card"
-                            : "slim";
+                        const rowVariant =
+                          folderRow === FLAT_THREAD_ROW
+                            ? "slim"
+                            : folderRow
+                              ? folderRowsMultiline
+                                ? "folder-multiline"
+                                : "folder"
+                              : isCard
+                                ? "card"
+                                : "slim";
                         return (
                           <SortableThreadRow
                             key={threadKey}
@@ -3473,7 +3485,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                             thread={thread}
                             variant={rowVariant}
                             navigationParent={
-                              folderRow ??
+                              (folderRow === FLAT_THREAD_ROW ? undefined : folderRow) ??
                               (section === "working" ||
                               section === "snoozed" ||
                               section === "settled"
@@ -3605,6 +3617,13 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                           continue;
                         }
                         if (projectFolders !== null && item.marker === "active-placeholder") {
+                          if (FLAT_THREAD_LIST) {
+                            for (const thread of activeThreads) {
+                              if (z3Tabs.tabOf.has(threadShellKey(thread))) continue;
+                              items.push(renderThreadRow(thread, "active", FLAT_THREAD_ROW));
+                            }
+                            continue;
+                          }
                           for (const folder of projectFolders) {
                             items.push(
                               <SidebarProjectFolderHeader

@@ -9,6 +9,7 @@ import {
 } from "../components/chat/threadContextDrag";
 import type { ThreadContextDropRef } from "../components/chat/threadContextDrop.logic";
 import { cn } from "../lib/utils";
+import { readLocalApi } from "../localApi";
 import { useQuietThreadShell } from "../state/entities";
 import type { ThreadRouteTarget } from "../threadRoutes";
 import {
@@ -60,6 +61,11 @@ export function useSidebarTabs(): {
   }
   return { tabs, tabOf };
 }
+
+/** Threads outside tabs are one flat list; stock groups the grouped sidebar's into project folders. */
+export const FLAT_THREAD_LIST: boolean = true;
+/** Stands in for a folder's row id, so a flat row is a one-line row with its project mark. */
+export const FLAT_THREAD_ROW = "z3-flat";
 
 /** The tree row of a tab's header; its thread rows name it as their parent. */
 export const sidebarTabRowId = (tabId: string) => `z3-tab:${tabId}`;
@@ -218,4 +224,25 @@ export function isTabMenuId(id: string): id is TabMenuId {
 export function runTabMenu(id: TabMenuId, threadRef: ScopedThreadRef): void {
   if (id === "z3:untab") removeFromTabs([serverTarget(threadRef)]);
   else if (id !== "z3:tab") openInTab([serverTarget(threadRef)], id.slice("z3:tab:".length));
+}
+
+/** The click menu of a thread no pane shows: every tab, then a new tab. */
+export async function pickTab(
+  threadRef: ScopedThreadRef,
+  position: { x: number; y: number },
+  tabs: ReadonlyArray<SidebarTab>,
+): Promise<void> {
+  const api = readLocalApi();
+  if (!api) {
+    console.info("[z3] no menu api; the thread opens in the focused pane's tab");
+    return openInTab([serverTarget(threadRef)], useZ3Store.getState().layout.activeTabId);
+  }
+  const picked = await api.contextMenu.show<TabMenuId>(
+    [
+      ...tabs.map((tab) => ({ id: `z3:tab:${tab.id}` as const, label: tab.label })),
+      { id: "z3:tab:new", label: "New tab", icon: "plus", separatorBefore: true },
+    ],
+    position,
+  );
+  if (picked !== null) runTabMenu(picked, threadRef);
 }

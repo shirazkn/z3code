@@ -10,7 +10,7 @@ import {
 
 const THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 1;
+const THEME_VERSION = 2;
 const ADOPTED_KEY = "z3code:theme-adopted";
 
 // The dotfiles' Ghostty work profile: A24 Nocturne (dark) and A24 Daylight (light).
@@ -45,7 +45,7 @@ const LIGHT = a24("light", {
 
 const Z3_THEME: ThemeDefinition = {
   id: THEME_ID,
-  label: "z3 (A24)",
+  label: "z3",
   appearance: "dark",
   colors: DARK,
   variants: { light: LIGHT, dark: DARK },
