@@ -22,6 +22,7 @@ import * as ElectronTheme from "../electron/ElectronTheme.ts";
 import * as ElectronWindow from "../electron/ElectronWindow.ts";
 import * as DesktopState from "./DesktopState.ts";
 import * as DesktopWindow from "../window/DesktopWindow.ts";
+import { syncDockIcon } from "../z3/dockIcon.ts";
 
 export class DesktopLifecycleRelaunchError extends Schema.TaggedError<DesktopLifecycleRelaunchError>()(
   "DesktopLifecycleRelaunchError",
@@ -257,10 +258,12 @@ export const make = DesktopLifecycle.of({
     const context = yield* Effect.context<DesktopLifecycleRegistrationServices>();
     const runEffect = Effect.runPromiseWith(context);
     const quit: QuitState = { phase: "running", waitingSinceNanos: 0n };
+    yield* syncDockIcon;
     yield* electronTheme.onUpdated(() => {
       void runEffect(
         desktopWindow.syncAppearance.pipe(Effect.withSpan("desktop.lifecycle.themeUpdated")),
       );
+      void runEffect(syncDockIcon);
     });
     yield* electronApp.onBeforeQuitForUpdate(() => {
       // Electron's updater owns the remaining quit/install/relaunch sequence.

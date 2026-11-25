@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 824 824"><defs>
+  <linearGradient id="bg" x1="0.15" y1="0" x2="0.85" y2="1">
+    <stop offset="0" stop-color="#fffaf0"/>
+    <stop offset="0.5" stop-color="#fbf4e2"/>
+    <stop offset="1" stop-color="#eedfbb"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0" r="0.75">
+    <stop offset="0" stop-color="#7fdcc4" stop-opacity="0.45"/>
+    <stop offset="1" stop-color="#7fdcc4" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="ember" cx="0.22" cy="0.96" r="0.5">
+    <stop offset="0" stop-color="#f2a36b" stop-opacity="0.35"/>
+    <stop offset="1" stop-color="#f2a36b" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1d4a40"/>
+    <stop offset="1" stop-color="#0f2a24"/>
+  </linearGradient>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#e86a22"/>
+    <stop offset="1" stop-color="#d85a14"/>
+  </linearGradient>
+  <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.9"/>
+    <stop offset="0.3" stop-color="#fff" stop-opacity="0.1"/>
+    <stop offset="1" stop-color="#5a4a20" stop-opacity="0.28"/>
+  </linearGradient>
+  <filter id="lift" x="-10%" y="-10%" width="120%" height="140%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
+    <feOffset dy="16"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.22"/></feComponentTransfer>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <clipPath id="clip"><rect width="824" height="824" rx="186"/></clipPath>
+</defs>
+<g clip-path="url(#clip)">
+  <rect width="824" height="824" fill="url(#bg)"/>
+  <rect width="824" height="824" fill="url(#glow)"/>
+  <rect width="824" height="824" fill="url(#ember)"/>
+  <g filter="url(#lift)">
+    <g transform="translate(132 198) scale(6.3)">
+      <path d="M0 0H44V11L14.55 45H44V56H0V45L29.45 11H0ZM49 0H89V11H49ZM89 11L71.68 31H57.13L74.45 11ZM66.65 20H68A22 18 0 0 1 68 56H44V45H68A11 7 0 0 0 68 31H66.65Z" fill="url(#ink)"/>
+    </g>
+    <rect x="132" y="618" width="150" height="24" rx="12" fill="url(#amber)"/>
+    <rect x="300" y="618" width="194" height="24" rx="12" fill="#128a73" fill-opacity="0.3"/>
+    <rect x="512" y="618" width="181" height="24" rx="12" fill="#128a73" fill-opacity="0.3"/>
+  </g>
+</g>
+<rect x="2" y="2" width="820" height="820" rx="184" fill="none" stroke="url(#rim)" stroke-width="4"/>
+</svg>

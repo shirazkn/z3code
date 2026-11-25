@@ -8,7 +8,7 @@ A fork of [T3 Code](https://github.com/pingdotgg/t3code) `v0.1.11` with Zellij-s
 scripts/z3/install-mac.sh
 ```
 
-It builds `z3code.app` from this checkout, copies it to `/Applications`, signs it ad hoc and opens it. It needs Node 26, pnpm 12 and Rust. Pair a remote T3 server (`0.1.11`) with `t3 pair` there, then Add environment in the app.
+It builds `z3code.app` from this checkout, copies it to `/Applications`, signs it ad hoc and opens it. It needs Node 26, pnpm 12 and Rust. Pair a remote T3 server (`0.1.11`) with `t3 pair` there, then Add environment in the app. While it runs, the app sets its Dock icon to the light or the dark z3 icon, as its appearance (System by default) asks; Finder and Launchpad always show the dark one.
 
 ## Workspace
 

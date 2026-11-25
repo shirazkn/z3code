@@ -23,4 +23,8 @@ rm -rf /Applications/z3code.app
 cp -R "$app" /Applications/z3code.app
 # Ad-hoc signature: the build has no Apple developer identity.
 codesign --force --deep --sign - /Applications/z3code.app
+# macOS caches an app's icon by path; a new modification time and a fresh registration drop it.
+touch /Applications/z3code.app
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister \
+  -f /Applications/z3code.app
 open /Applications/z3code.app

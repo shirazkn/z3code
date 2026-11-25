@@ -10,7 +10,7 @@ import {
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 6;
+const THEME_VERSION = 7;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */
@@ -21,10 +21,13 @@ interface Palette {
   readonly fg: string;
   /** Tints every surface and border. */
   readonly tint: string;
-  /** Buttons, the focus ring, the active tab and the mode label. */
+  /** Buttons, the active tab and the mode label. */
   readonly accent: string;
   readonly onAccent: string;
   readonly accentHover: string;
+  /** The focus ring and highlights; with `accent` it colors the theme's preview in Settings. */
+  readonly second: string;
+  readonly onSecond: string;
   readonly cursor: string;
   readonly selection: string;
 }
@@ -34,10 +37,10 @@ function fromIcon(appearance: "light" | "dark", palette: Palette): ThemeColors {
   return {
     ...createVividThemeColors(appearance, palette.bg, palette.tint),
     text: palette.fg,
-    accent: palette.accent,
-    accentForeground: palette.onAccent,
-    focus: palette.accent,
-    update: palette.accent,
+    accent: palette.second,
+    accentForeground: palette.onSecond,
+    focus: palette.second,
+    update: palette.second,
     messageAction: palette.accent,
     messageActionForeground: palette.onAccent,
     messageActionHover: palette.accentHover,
@@ -55,6 +58,8 @@ const DARK = fromIcon("dark", {
   accent: "#e3a94f",
   onAccent: "#1b1305",
   accentHover: "#f0bb62",
+  second: "#5fc7ae",
+  onSecond: "#04130f",
   cursor: "#e3a94f",
   selection: "#17382f",
 });
@@ -65,6 +70,8 @@ const LIGHT = fromIcon("light", {
   accent: "#d85a14",
   onAccent: "#fffaf0",
   accentHover: "#bf4c0c",
+  second: "#128a73",
+  onSecond: "#fffaf0",
   cursor: "#d85a14",
   selection: "#f6d9bd",
 });
