@@ -286,6 +286,28 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   border-radius: 4px;
 }
 
+/* A dense changed-files card: 20px rows and a thin header. The h-7 sizer feeds the
+   virtualized row height, so it shrinks with the rows. */
+[data-z3-host] [data-changed-files-state] {
+  margin-top: 0.5rem;
+}
+[data-z3-host] [data-changed-files-header] {
+  padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+}
+[data-z3-host] [data-changed-files-header] button {
+  height: 1.25rem;
+}
+[data-z3-host] [data-changed-files-state] > div:has([data-changed-file-row]) {
+  padding: 0 0.25rem 0.25rem;
+}
+[data-z3-host] [data-changed-file-row] > button,
+[data-z3-host] [data-changed-files-state] .h-7[aria-hidden] {
+  height: 1.25rem;
+  padding-block: 0;
+  gap: 0.375rem;
+  border-radius: 4px;
+}
+
 /* A notice in a pane is two lines, so a low pane's notice stays clear of the composer. Its
    tooltip has the full text. */
 [data-z3-cell] [data-slot="alert-description"] > div:has(> .line-clamp-3) {
