@@ -22,6 +22,7 @@ import {
   moveTab,
   movePane,
   neighbor,
+  paintLeaves,
   placeNewPane,
   placeTarget,
   rects,
@@ -328,6 +329,26 @@ describe("tabGroups", () => {
     expect(groups.flatMap((group) => group.panes.filter((pane) => pane.focused))).toEqual([
       expect.objectContaining({ id: bottom }),
     ]);
+  });
+});
+
+describe("paintLeaves", () => {
+  const hues = (layout: Layout) => layout.tabs.map((t) => leaves(t.root).map((leaf) => leaf.hue));
+
+  it("gives new panes the hues their tab, then the layout, uses least, and keeps set hues", () => {
+    const { tab } = threePanes();
+    const first = paintLeaves({ tabs: [tab], activeTabId: tab.id, lastTabId: null });
+    expect(hues(first)).toEqual([[0, 1, 2]]);
+    expect(paintLeaves(first)).toBe(first);
+    const added = paintLeaves(addTab(first, createTab(createLeaf(null))));
+    expect(hues(added)).toEqual([[0, 1, 2], [3]]);
+  });
+
+  it("keeps a thread's hue when the thread moves to another tab", () => {
+    const { tab } = threePanes();
+    const painted = paintLeaves({ tabs: [tab], activeTabId: tab.id, lastTabId: null });
+    const moved = placeTarget(painted, draft("b"), "new", { width: 1, height: 1 });
+    expect(hues(paintLeaves(moved))).toEqual([[0, 1], [2]]);
   });
 });
 

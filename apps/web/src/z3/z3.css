@@ -166,6 +166,7 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   z-index: 61;
   pointer-events: none;
   box-shadow:
+    var(--z3-hue-line, 0 0 transparent),
     inset calc(var(--z3-inner-left, 0) * 1px) 0 0 var(--z3-line),
     inset 0 calc(var(--z3-inner-top, 0) * 1px) 0 var(--z3-line);
 }
@@ -192,6 +193,44 @@ html[data-theme-id="ember"].dark [data-z3-host] {
     color-mix(in oklab, var(--muted-foreground) var(--appearance-contrast-base), var(--background)),
     var(--appearance-contrast-target) 20%
   );
+}
+
+/* A palette theme defines `--z3-hue-0` to `-5` (palettes.ts) and each pane takes one as its
+   accent and flat ground. Without them these declarations are invalid, and so inherit the theme's own values. */
+[data-z3-hue="0"] {
+  --z3-hue: var(--z3-hue-0);
+}
+[data-z3-hue="1"] {
+  --z3-hue: var(--z3-hue-1);
+}
+[data-z3-hue="2"] {
+  --z3-hue: var(--z3-hue-2);
+}
+[data-z3-hue="3"] {
+  --z3-hue: var(--z3-hue-3);
+}
+[data-z3-hue="4"] {
+  --z3-hue: var(--z3-hue-4);
+}
+[data-z3-hue="5"] {
+  --z3-hue: var(--z3-hue-5);
+}
+
+[data-z3-cell][data-z3-hue] {
+  --primary: var(--z3-hue);
+  --primary-foreground: var(--z3-on-hue);
+  --message-action: var(--z3-hue);
+  --message-action-foreground: var(--z3-on-hue);
+  --message-action-hover: color-mix(in oklab, var(--z3-hue) 85%, var(--foreground));
+  --ring: var(--z3-hue);
+  --message-surface: color-mix(in oklab, var(--z3-hue) 16%, var(--background));
+  --terminal-cursor: var(--z3-hue);
+  --z3-hue-line: inset 0 2px 0 var(--z3-hue);
+  --z3-pane: color-mix(in oklab, var(--z3-hue) 15%, var(--app-theme-canvas));
+  --background: var(--z3-pane);
+  --app-chrome-background: var(--z3-pane);
+  --toolbar-background: var(--z3-pane);
+  background-color: var(--z3-pane, transparent);
 }
 
 /* In a split the other panes fade back; a mode fades them further. */
@@ -441,7 +480,7 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
 [data-z3-spin] {
   display: inline-block;
   width: 1.2em;
-  color: var(--color-primary);
+  color: var(--primary);
 }
 
 /* The composer hint stays on one line and far back; a wrapped one runs under the footer. */

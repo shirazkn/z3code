@@ -9,6 +9,8 @@ export interface Leaf {
   readonly id: string;
   /** Null while a new pane waits for its draft thread. */
   readonly target: ThreadRouteTarget | null;
+  /** The pane's slot in a palette theme, kept for its life; `paintLeaves` sets it. */
+  readonly hue?: number;
 }
 
 /** `sizes` are fractions that sum to 1. A child split never has its parent's axis. */
@@ -68,8 +70,8 @@ export function targetKey(target: ThreadRouteTarget): string {
     : `draft:${target.draftId}`;
 }
 
-export function createLeaf(target: ThreadRouteTarget | null): Leaf {
-  return { id: newId("pane"), target };
+export function createLeaf(target: ThreadRouteTarget | null, hue?: number): Leaf {
+  return { id: newId("pane"), target, ...(hue === undefined ? {} : { hue }) };
 }
 
 export function createTab(leaf: Leaf): Tab {
@@ -133,6 +135,36 @@ function mapNode(node: PaneNode, fn: (node: PaneNode) => PaneNode): PaneNode {
     ? { ...node, children: node.children.map((c) => mapNode(c, fn)) }
     : node;
   return fn(mapped);
+}
+
+export const HUES = 6;
+
+/** Gives each pane with no hue the one its tab uses least, then the layout; a set hue stays. */
+export function paintLeaves(layout: Layout): Layout {
+  const count = (panes: ReadonlyArray<Leaf>) => {
+    const used = Array.from({ length: HUES }, () => 0);
+    for (const pane of panes) if (pane.hue !== undefined) used[pane.hue % HUES]! += 1;
+    return used;
+  };
+  const all = layout.tabs.flatMap((tab) => leaves(tab.root));
+  if (all.every((leaf) => leaf.hue !== undefined)) return layout;
+  const total = count(all);
+  const tabs = layout.tabs.map((tab) => {
+    const local = count(leaves(tab.root));
+    const root = mapNode(tab.root, (node) => {
+      if (isSplit(node) || node.hue !== undefined) return node;
+      let hue = 0;
+      for (let next = 1; next < HUES; next++) {
+        const fewer = local[next]! - local[hue]! || total[next]! - total[hue]!;
+        if (fewer < 0) hue = next;
+      }
+      local[hue]! += 1;
+      total[hue]! += 1;
+      return { ...node, hue };
+    });
+    return { ...tab, root };
+  });
+  return { ...layout, tabs };
 }
 
 /** Rewrites every leaf of every tab; returns the same layout when no leaf changes. */
@@ -578,6 +610,7 @@ export function placeTarget(
   }
   if (dest !== "new" && !layout.tabs.some((tab) => tab.id === dest)) return layout;
   let tabs = layout.tabs;
+  const hue = source === null ? undefined : findLeaf(source.root, shown!.leafId)?.hue;
   if (shown !== null && source !== null) {
     const remaining = closePane(source, shown.leafId);
     tabs =
@@ -587,7 +620,7 @@ export function placeTarget(
   }
   let destId = dest;
   if (dest === "new") {
-    const tab = createTab(createLeaf(target));
+    const tab = createTab(createLeaf(target, hue));
     tabs = [...tabs, tab];
     destId = tab.id;
   } else {
@@ -596,7 +629,7 @@ export function placeTarget(
       const blank = leaves(tab.root).find(isBlank);
       if (blank === undefined) {
         const place = placeNewPane(tab, grid);
-        return splitPane(tab, place.leafId, place.direction, createLeaf(target));
+        return splitPane(tab, place.leafId, place.direction, createLeaf(target, hue));
       }
       const root = mapNode(tab.root, (node) =>
         node.id === blank.id ? { ...blank, target } : node,

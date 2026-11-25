@@ -7,10 +7,11 @@ import {
   installCustomTheme,
   updateCustomTheme,
 } from "../themePalette";
+import { PALETTE_THEMES, paletteCss, type PaletteTheme } from "./palettes";
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 7;
+const THEME_VERSION = 9;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */
@@ -76,33 +77,67 @@ const LIGHT = fromIcon("light", {
   selection: "#f6d9bd",
 });
 
+const fontCss = (id: string) =>
+  `html[data-theme-id="${id}"] { --font-mono: "IosevkaTermSlab NFM", "Iosevka Term Slab", "Iosevka Term", ui-monospace, monospace; }`;
+
 const Z3_THEME: ThemeDefinition = {
   id: Z3_THEME_ID,
   label: "z3",
   appearance: "dark",
   colors: DARK,
   variants: { light: LIGHT, dark: DARK },
-  css: `html[data-theme-id="${Z3_THEME_ID}"] { --font-mono: "IosevkaTermSlab NFM", "Iosevka Term Slab", "Iosevka Term", ui-monospace, monospace; }`,
+  css: fontCss(Z3_THEME_ID),
 };
 
-/** Installs the z3 theme and selects it once per `SELECT_VERSION`; later choices stay. */
+/** Fixed surfaces take the palette's neutral; z3.css colors each pane from the theme's CSS. */
+function fromPalette(theme: PaletteTheme): ThemeDefinition {
+  const colors = (appearance: "light" | "dark") => {
+    const variant = theme[appearance];
+    return fromIcon(appearance, {
+      bg: variant.bg,
+      fg: variant.fg,
+      tint: variant.neutral,
+      accent: variant.neutral,
+      onAccent: variant.onNeutral,
+      accentHover: variant.neutralHover,
+      second: variant.neutral,
+      onSecond: variant.onNeutral,
+      cursor: variant.neutral,
+      selection: variant.selection,
+    });
+  };
+  const dark = colors("dark");
+  return {
+    id: theme.id,
+    label: theme.label,
+    appearance: "dark",
+    colors: dark,
+    variants: { light: colors("light"), dark },
+    css: `${fontCss(theme.id)} ${paletteCss(theme)}`,
+  };
+}
+
+/** In Settings order. */
+const THEMES: ReadonlyArray<ThemeDefinition> = [Z3_THEME, ...PALETTE_THEMES.map(fromPalette)];
+
+/** Installs the fork's themes and selects the z3 theme once per `SELECT_VERSION`; later choices stay. */
 export function adoptZ3Theme(): void {
   try {
-    installZ3Theme();
+    installThemes();
     selectZ3Theme();
   } catch (error) {
     console.warn("[z3] theme not installed; stock theme stays", error);
   }
 }
 
-function installZ3Theme(): void {
+function installThemes(): void {
   if (Number(window.localStorage.getItem(ADOPTED_KEY) ?? 0) === THEME_VERSION) return;
-  if (getCustomThemes().some((theme) => theme.id === Z3_THEME_ID)) {
-    updateCustomTheme(Z3_THEME);
-    refreshTheme();
-  } else {
-    installCustomTheme(Z3_THEME);
+  const installed = new Set(getCustomThemes().map((theme) => theme.id));
+  for (const theme of THEMES) {
+    if (installed.has(theme.id)) updateCustomTheme(theme);
+    else installCustomTheme(theme);
   }
+  refreshTheme();
   window.localStorage.setItem(ADOPTED_KEY, String(THEME_VERSION));
 }
 

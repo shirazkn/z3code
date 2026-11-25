@@ -15,6 +15,7 @@ import {
   isMulti,
   leaves,
   mapLeaves,
+  paintLeaves,
   type Layout,
 } from "./layout";
 
@@ -30,7 +31,7 @@ interface Z3State {
 export const useZ3Store = create<Z3State>()(
   persist(
     (): Z3State => ({
-      layout: createLayout(null),
+      layout: paintLeaves(createLayout(null)),
       routeKey: null,
       mode: "normal",
       focusRequest: null,
@@ -41,7 +42,7 @@ export const useZ3Store = create<Z3State>()(
       partialize: (state) => ({ layout: state.layout }),
       merge: (persisted, current) => {
         const layout = (persisted as { layout?: unknown } | undefined)?.layout;
-        if (isLayout(layout)) return { ...current, layout: dedupeTargets(layout) };
+        if (isLayout(layout)) return { ...current, layout: paintLeaves(dedupeTargets(layout)) };
         if (layout !== undefined) console.warn("[z3] stored layout is unsound; starting fresh");
         return current;
       },
@@ -112,6 +113,9 @@ useComposerDraftStore.subscribe((state, previous) => {
 });
 
 useZ3Store.subscribe((state, previous) => {
+  // Every way to make a pane ends here, so new panes take their hue at this one site.
+  const painted = paintLeaves(state.layout);
+  if (painted !== state.layout) return useZ3Store.setState({ layout: painted });
   if (state.layout !== previous.layout) syncPaneDrafts(state.layout);
   // A mode dims everything but the focused pane (z3.css); the lock is not a mode here.
   if (state.mode !== previous.mode) {

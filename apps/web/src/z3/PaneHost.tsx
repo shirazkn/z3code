@@ -153,6 +153,7 @@ function PaneCell({
   return (
     <div
       data-z3-cell={leaf.id}
+      data-z3-hue={leaf.hue}
       data-focused={focused || undefined}
       data-multi={multi || undefined}
       data-z3-inner-left={(!hidden && rect.left > 0) || undefined}

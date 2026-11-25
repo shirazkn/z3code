@@ -7,6 +7,7 @@ import {
 } from "@t3tools/shared/themePreview";
 import { cn } from "../../lib/utils";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
+import { paletteOf } from "../../z3/palettes";
 import {
   getThemeColorsForMode,
   getThemeModes,
@@ -26,7 +27,8 @@ const THEME_PREVIEW_ROLES = [
 type ThemePreviewRole = (typeof THEME_PREVIEW_ROLES)[number];
 type ThemeCardPreview = {
   mode: ThemeAppearance;
-  colors: Readonly<Record<ThemePreviewRole, string>>;
+  // z3: a palette theme's preview is a strip of its colors.
+  colors: Readonly<Record<ThemePreviewRole, string>> & { palette?: ReadonlyArray<string> };
 };
 export type ThemeCardDefinition = {
   id: string;
@@ -80,9 +82,11 @@ export function getThemeCardDefinition(theme: ThemeDefinition): ThemeCardDefinit
     label: theme.label,
     previews: getThemeModes(theme).map((mode) => {
       const colors = getThemeColorsForMode(theme, mode) ?? theme.colors;
+      const palette = paletteOf(theme.id, mode);
       return {
         mode,
         colors: {
+          ...(palette ? { palette } : {}),
           sidebar: colors.sidebar,
           canvas: colors.canvas,
           surface: colors.surface,
@@ -100,6 +104,11 @@ function getThemePreviewStyle(
   colors: ThemeCardPreviewColors,
   mode: ThemeAppearance,
 ): CSSProperties {
+  if (colors.palette) {
+    const step = 100 / colors.palette.length;
+    const stripes = colors.palette.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`);
+    return { backgroundImage: `linear-gradient(100deg, ${stripes.join(", ")})` };
+  }
   const spec = THEME_PREVIEW_RENDER_SPECS[mode];
   const modeBase = `color-mix(in oklab, ${colors.canvas} ${spec.baseWeight * 100}%, ${spec.baseTarget})`;
   const accentPosition = `${spec.accent.center[0] * 100}% ${spec.accent.center[1] * 100}%`;
@@ -141,8 +150,12 @@ export function ThemePreviewCircle({
         className="absolute inset-0 rounded-full"
         style={{
           ...getThemePreviewStyle(colors, mode),
-          filter: `blur(${THEME_PREVIEW_RENDER_SPECS[mode].blurAt56Px}px)`,
-          transform: `scale(${THEME_PREVIEW_RENDER_SPECS[mode].scale})`,
+          ...(colors.palette
+            ? {}
+            : {
+                filter: `blur(${THEME_PREVIEW_RENDER_SPECS[mode].blurAt56Px}px)`,
+                transform: `scale(${THEME_PREVIEW_RENDER_SPECS[mode].scale})`,
+              }),
         }}
       />
     </span>

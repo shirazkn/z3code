@@ -27,6 +27,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only. In a new thread, the project name in the title is the project picker: a search list of the known projects, and Add project.
 - The focused pane draws its text at full strength. In a split the other panes fade back (light themes shade them, dark themes veil them); a mode fades them further and dims the sidebar.
 - UI text runs one step under the chat text. Every color comes from the active theme.
+- A palette theme (`kida`, after `z3` in Settings; `palettes.ts`) gives each pane one of its 6 colors: the pane's top line, flat ground, buttons, focus ring and message bubbles. The sidebar and tab bar keep the palette's neutral. The theme is flat: shadows have no blur, and only the tab bar fades, to black at its top. A new pane takes the color its tab uses least and keeps it (`paintLeaves` in `layout.ts`). Any theme whose CSS defines `--z3-hue-0` to `--z3-hue-5` and `--z3-on-hue` colors panes this way. Settings shows a palette theme as a strip of its colors (`components/settings/ThemePreviewCircles.tsx`).
 - The first launch selects the z3 theme, the wide chat width and the grouped sidebar; Settings can change them.
 
 ## Keys
