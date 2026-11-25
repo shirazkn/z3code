@@ -60,12 +60,15 @@ interface DraftHeroHeadlineProps {
   readonly draftId: DraftId | null;
   readonly activeProjectRef: ScopedProjectRef | null;
   readonly activeProjectTitle: string | null;
+  /** z3: only the project picker, for a pane's title. */
+  readonly pickerOnly?: boolean;
 }
 
 export function DraftHeroHeadline({
   draftId,
   activeProjectRef,
   activeProjectTitle,
+  pickerOnly,
 }: DraftHeroHeadlineProps) {
   const gt = useGT();
   const projects = useProjects();
@@ -344,6 +347,8 @@ export function DraftHeroHeadline({
         {noProjectShortcut ? <TooltipPopup side="bottom">{noProjectShortcut}</TooltipPopup> : null}
       </Tooltip>
     ) : null;
+
+  if (pickerOnly) return projectSelector;
 
   if (isScratchDraft && isTriageDraftPrompt) {
     const environment = environments.find(

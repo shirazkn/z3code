@@ -3454,6 +3454,17 @@ export default function ChatView(props: ChatViewProps) {
               onOpenThread={onOpenRelatedThreadStable}
               rightPanelOpen={inlineRightPanelOwnsTitleBar}
               onNewThreadInProject={handleNewThreadInActiveProjectStable}
+              // z3: a new thread's pane title picks the project; the hero that does it is hidden.
+              projectPicker={
+                isDraftHeroState ? (
+                  <DraftHeroHeadline
+                    pickerOnly
+                    draftId={draftId}
+                    activeProjectRef={activeProjectRef}
+                    activeProjectTitle={activeProject?.title ?? null}
+                  />
+                ) : null
+              }
               {...(activeDraftLogicalProjectKey
                 ? { onOpenProjectSettings: handleOpenDraftProjectSettingsStable }
                 : {})}

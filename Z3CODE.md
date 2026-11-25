@@ -24,7 +24,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - In dark mode the chat area's background drops to true black over its last 32 px at the top and bottom, the top of the tab bar included.
 - The four tabs shown last stay loaded, so a switch back does not load the threads again.
 - The tab bar is the top row. Tabs are named Tab 1, Tab 2… until you rename them (double-click, or Cmd+T r); hover shows a close button; + opens a tab. While a mode is on, the bar's right end names it and lists its main keys, the key letters in the accent color; Locked shows while the lock is on.
-- Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only.
+- Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only. In a new thread, the project name in the title is the project picker: a search list of the known projects, and Add project.
 - The focused pane draws its text at full strength. In a split the other panes fade back (light themes shade them, dark themes veil them); a mode fades them further and dims the sidebar.
 - UI text runs one step under the chat text. Every color comes from the active theme.
 - The first launch selects the z3 theme, the wide chat width and the grouped sidebar; Settings can change them.
