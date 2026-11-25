@@ -2,7 +2,8 @@ import { appAtomRegistry } from "../rpc/atomRegistry";
 import { localEnvironmentIdAtom } from "../state/primaryEnvironment";
 import { themeServerSettingsAtom } from "../state/server";
 import { getThemeDefinition, singleAppearanceOf, subscribeToCustomThemes } from "../themePalette";
-import { getThemeSnapshot, setAppearanceMode, setTheme } from "./useTheme";
+import { Z3_THEME_ID } from "../z3/theme";
+import { setAppearanceMode, setTheme } from "./useTheme";
 
 const APPLIED_DEFAULT_THEME_STORAGE_PREFIX = "t3code:default-theme-applied:v2:";
 const APPLIED_DEFAULT_APPEARANCE_STORAGE_PREFIX = "t3code:default-appearance-applied:v1:";
@@ -73,8 +74,8 @@ function adoptDefaultTheme(): void {
   });
   if (generation === null) return;
   if (definition === null) {
-    // The stock theme keeps the client's own light, dark, or system mode.
-    if (setTheme(getThemeSnapshot().appearanceMode)) writeAppliedGeneration(storageKey, generation);
+    // z3code's stock theme is z3; it keeps the client's own light, dark, or system mode.
+    if (setTheme(Z3_THEME_ID)) writeAppliedGeneration(storageKey, generation);
     return;
   }
 

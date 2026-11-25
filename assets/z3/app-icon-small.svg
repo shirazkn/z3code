@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 824 824"><defs>
+  <radialGradient id="bg" cx="0.3" cy="0.15" r="1.1">
+    <stop offset="0" stop-color="#1f5247"/>
+    <stop offset="0.55" stop-color="#0e2a25"/>
+    <stop offset="1" stop-color="#040c0b"/>
+  </radialGradient>
+  <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fbf1da"/>
+    <stop offset="1" stop-color="#d8c39a"/>
+  </linearGradient>
+  <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f4e7cc" stop-opacity="0.28"/>
+    <stop offset="0.25" stop-color="#f4e7cc" stop-opacity="0.04"/>
+    <stop offset="1" stop-color="#000" stop-opacity="0.3"/>
+  </linearGradient>
+  <clipPath id="clip"><rect width="824" height="824" rx="186"/></clipPath>
+</defs>
+<g clip-path="url(#clip)"><rect width="824" height="824" fill="url(#bg)"/><g transform="translate(74 202) scale(7.5)"><path d="M0 0H44V11L14.55 45H44V56H0V45L29.45 11H0ZM49 0H89V11H49ZM89 11L71.68 31H57.13L74.45 11ZM66.65 20H68A22 18 0 0 1 68 56H44V45H68A11 7 0 0 0 68 31H66.65Z" fill="#fbf1da"/></g></g></svg>

@@ -73,7 +73,7 @@ async function openThread(thread: FakeThread) {
 
 const ARTIFACT_URL = "https://claude.ai/artifact/AAAAAAAAAAAAAAAAAAAAAA";
 
-it("a pane whose thread published an artifact shows a button that opens it for its account", async () => {
+it("a pane whose thread published an artifact shows a button; Alt-click opens it for its account", async () => {
   const plain = threadWithHistory("z3-plain", 1);
   const base = threadWithHistory("z3-artifact", 1);
   const {
@@ -102,7 +102,9 @@ it("a pane whose thread published an artifact shows a button that opens it for i
 
   const button = page.getByRole("button", { name: "Open artifact: Status" });
   await expect.element(button).toBeVisible();
+  await userEvent.keyboard("{Alt>}");
   await userEvent.click(button);
+  await userEvent.keyboard("{/Alt}");
   // The thread's account gets its own browser profile before the panel opens the link.
   const instanceId = thread.modelSelection!.instanceId;
   await vi.waitFor(() =>

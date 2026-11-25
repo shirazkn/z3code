@@ -20,7 +20,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - A focus move or a tab switch paints first; the thread views and the route follow in a later render.
 - With the sidebar collapsed the tab bar stays 28 px, except beside the macOS window buttons (a window that is not full screen).
 - The first launch sets the glass opacity to 50%.
-- A pane whose Claude thread published or read an artifact shows a window icon in its title bar. A click opens the newest artifact in the Browser panel, in a browser profile of the thread's provider account (added on first use, with its own cookies); sign in to claude.ai once per profile. Without a Browser panel the link opens in a new window.
+- A pane whose Claude thread published or read an artifact shows a window icon in its title bar. A click opens the newest artifact in the system browser, because claude.ai's bot check fails in the Browser panel. Alt-click opens it in the Browser panel, in a browser profile of the thread's provider account (added on first use, with its own cookies).
 - In dark mode the chat area's background drops to true black over its last 32 px at the top and bottom, the top of the tab bar included.
 - The four tabs shown last stay loaded, so a switch back does not load the threads again.
 - The tab bar is the top row. Tabs are named Tab 1, Tab 2… until you rename them (double-click, or Cmd+T r); hover shows a close button; + opens a tab. While a mode is on, the bar's right end names it and lists its main keys, the key letters in the accent color; Locked shows while the lock is on.
@@ -61,12 +61,14 @@ Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Sh
   - `components/chat/TimelineWorkGroupRows.tsx`: the working row label (`Z3Working`).
   - `main.tsx`: `z3/firstKeyListener` loads first, so a mode sees every key before stock listeners.
   - `appInit.tsx`: `adoptZ3Theme`.
+  - `hooks/useDefaultTheme.ts`: a server default of the stock theme selects the z3 theme.
   - `apps/desktop/src/window/DesktopApplicationMenu.ts`: Hide without Cmd+H.
   - `vite.config.ts`: `apps/web/src/z3/**` is exempt from the translation lint.
   - `components/ChatView.browser.test.tsx`: its stash and right-panel chords moved off the mode keys.
   - `components/settings/KeybindingsSettings.tsx`: the Zellij modes section.
   - `components/AppSidebarLayout.tsx`: `data-native-window-controls` on the sidebar wrapper.
   - `components/chat/ComposerAttachmentStrip.tsx`: also the fainter attach icon.
+  - `scripts/lib/brand-assets.ts`, `apps/desktop/scripts/electron-launcher.mjs`, `components/T3AppIcon.tsx`, `apps/web/public/*`: the z3 icon. Its sources are `assets/z3/app-icon.svg` and `app-icon-small.svg` (32 px and below); `scripts/z3/render-icons.sh` renders every size.
   - `components/sidebar/SidebarChrome.tsx`: the Z3 wordmark (`z3/Z3Wordmark.tsx`) in place of T3's.
   - `components/Sidebar.tsx`: the tab groups (`z3/SidebarTabs.tsx`) lead the thread list and take their threads out of the stock rows; a drag onto a tab counts as a drag out of the list; the thread menu gets the tab entries; a click on a thread outside tabs opens the tab menu; the grouped sidebar lists threads flat (`FLAT_THREAD_LIST`). A drag of a tab's thread never reorders the stock list.
 - Update: `git fetch upstream --tags && git rebase --onto <new tag> v0.1.11 main`, then run `vp run typecheck` in `apps/web` and `vp test run src/z3` (unit and browser). Keep the base tag equal to the server version you pair with.

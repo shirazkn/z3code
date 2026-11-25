@@ -12,6 +12,7 @@ import { AppWindowIcon } from "lucide-react";
 
 import { openUrlInPreview } from "../browser/openFileInPreview";
 import { getClientSettings, updateClientSettings } from "../hooks/useSettings";
+import { ensureLocalApi } from "../localApi";
 import { appAtomRegistry } from "../rpc/atomRegistry";
 import { readThreadShell, useQuietThreadProjection } from "../state/entities";
 import { environmentPresentations } from "../state/presentation";
@@ -49,7 +50,7 @@ async function profileFor(threadRef: ScopedThreadRef): Promise<string> {
   return profile.id;
 }
 
-/** Shown in a pane whose thread works on a Claude artifact: opens it in its account's browser. */
+/** Shown in a pane whose thread works on a Claude artifact. Alt-click uses its account's profile. */
 export function PaneArtifact({ threadRef }: { threadRef: ScopedThreadRef }) {
   const structure = useQuietThreadProjection(threadRef);
   const call =
@@ -74,8 +75,9 @@ export function PaneArtifact({ threadRef }: { threadRef: ScopedThreadRef }) {
   const artifact = artifactOf(detail.data?.item ?? call ?? { type: "", status: "" });
   if (artifact === null) return null;
 
-  const open = async () => {
-    if (canPreview) {
+  // claude.ai's bot check fails in the Browser panel, so the system browser is the default.
+  const open = async (inPanel: boolean) => {
+    if (inPanel && canPreview) {
       const profileId = await profileFor(threadRef);
       const result = await openUrlInPreview({
         threadRef,
@@ -84,14 +86,14 @@ export function PaneArtifact({ threadRef }: { threadRef: ScopedThreadRef }) {
         profileId,
       });
       if (result._tag === "Success") return;
-      console.info("[z3] the browser panel did not open the artifact; using a new window", {
+      console.info("[z3] the browser panel did not open the artifact; using the system browser", {
         thread: scopedThreadKey(threadRef),
         profileId,
       });
-    } else {
-      console.info("[z3] no browser panel access here; the artifact opens in a new window");
+    } else if (inPanel) {
+      console.info("[z3] no browser panel access here; the artifact opens in the system browser");
     }
-    window.open(artifact.url, "_blank", "noopener");
+    await ensureLocalApi().shell.openExternal(artifact.url);
   };
   const label = `Open artifact${artifact.title === null ? "" : `: ${artifact.title}`}`;
   return (
@@ -103,13 +105,13 @@ export function PaneArtifact({ threadRef }: { threadRef: ScopedThreadRef }) {
             data-z3-artifact
             aria-label={label}
             className="absolute top-1 z-[55] flex size-5 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-            onClick={() => void open()}
+            onClick={(event) => void open(event.altKey)}
           />
         }
       >
         <AppWindowIcon className="size-3.5" />
       </TooltipTrigger>
-      <TooltipPopup side="bottom">{label}</TooltipPopup>
+      <TooltipPopup side="bottom">{label} (Alt-click: Browser panel)</TooltipPopup>
     </Tooltip>
   );
 }
