@@ -2847,6 +2847,9 @@ export default function ChatView(props: ChatViewProps) {
         composerRef.current?.isCaretAtStart() === true &&
         queuedRunsControlRef.current?.editLatest(event.repeat) === true,
       "thread.stop": ({ event }) => {
+        // z3: Escape first takes back the latest queued message, and waits for one in flight.
+        const queue = event.key === "Escape" ? queuedRunsControlRef.current : null;
+        if (queue?.editLatest(event.repeat) || queue?.hasUnacknowledged()) return;
         if (!canInterruptRunningThread) return false;
         if (!event.repeat) void onInterruptStable();
       },

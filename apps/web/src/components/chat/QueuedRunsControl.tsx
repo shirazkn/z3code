@@ -62,6 +62,8 @@ const QUEUE_VISIBLE_ROWS = 3;
 export interface QueuedRunsControlHandle {
   steerNext: (repeat: boolean) => boolean;
   editLatest: (repeat: boolean) => boolean;
+  /** z3: a queued message the server has not yet acknowledged. */
+  hasUnacknowledged: () => boolean;
 }
 
 type ThreadQueueProjection = Parameters<typeof deriveThreadQueueWorkflowState>[0];
@@ -234,6 +236,7 @@ export function QueuedRunsControl({
       }
       return true;
     },
+    hasUnacknowledged: () => optimisticQueued.length > 0,
   }));
 
   if (items.length === 0) return null;

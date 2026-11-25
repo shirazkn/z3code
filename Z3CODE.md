@@ -47,6 +47,8 @@ Esc, Enter or the mode key again return to normal mode. A mode swallows the keys
 
 Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes. With no pane to the left or right they go to the previous or next tab and enter it at the near edge, so repeated presses walk every pane of every tab; with no pane and no other tab they bring the keyboard back to the focused pane. Alt+N new pane, Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] and Ctrl+[ ] previous/next tab. Option+arrows stay the text field's word moves. Alt keys with nothing to act on do nothing; the page-scroll keys with nothing to act on keep their stock meaning. Each direct key has one chord per modifier family (Globe or Ctrl, Cmd, Alt); the Globe key itself is not a modifier an app can read, so Globe+[ cannot be a key. In a search field, Home, End and Ctrl+arrows stay the field's own keys.
 
+Esc in the prompt box (normal mode): takes back the latest queued message to edit; with none queued, it stops the thread.
+
 Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ]. macOS Hide keeps its menu item and loses Cmd+H.
 
 ## Fork layout
@@ -57,6 +59,7 @@ Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Sh
   - `components/ThreadRouteView.tsx`: `passive` (a pane without focus is a background thread and leaves the route alone); `onUnavailable` (a pane drops a thread it cannot show instead of going home).
   - `components/chat/{ChatComposer,ComposerControl,ComposerControlsBar,ComposerPrimaryActions,ComposerAttachmentStrip,ComposerSpeechButton,ProviderModelPicker}.tsx`: the compact composer footer (20px controls, 11px text).
   - `components/ChatView.tsx`: four window-level composer-focus and paste listeners also stand down for a background thread.
+  - `packages/shared/src/keybindings.ts`, `components/ChatView.tsx`, `components/chat/QueuedRunsControl.tsx`: Esc on `thread.stop`, after the queued-message step.
   - `state/server.ts`: `remapStockKeys` on the app's keybinding list.
   - `components/chat/MessagesTimeline.tsx`: `data-chat-empty` on the empty-thread hint, which panes hide.
   - `components/chat/TimelineWorkGroupRows.tsx`: the working row label (`Z3Working`).
