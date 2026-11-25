@@ -267,6 +267,39 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   height: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
 
+/* Nested corners share a center: an inner radius is the outer one less the gap between them.
+   The box is 1rem round and its buttons sit 0.25rem in, so the 20px buttons come out round. */
+[data-z3-cell] [data-chat-composer-surface] {
+  border-radius: calc(1rem - 1px);
+}
+
+[data-z3-cell] [data-chat-composer-footer] button {
+  border-radius: calc(1rem - 0.25rem);
+}
+
+[data-z3-cell] [data-chat-composer-footer] button > svg.lucide {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* A sidebar row is 6px round; its button sits 2px in. */
+[data-sidebar="sidebar"] li[data-thread-item] [data-sidebar-row] span > button {
+  border-radius: 4px;
+}
+
+/* A notice in a pane is two lines, so a low pane's notice stays clear of the composer. Its
+   tooltip has the full text. */
+[data-z3-cell] [data-slot="alert-description"] > div:has(> .line-clamp-3) {
+  flex-direction: row;
+  align-items: center;
+}
+
+[data-z3-cell] [data-slot="alert-description"] .line-clamp-3 {
+  flex: 1;
+  min-width: 0;
+  -webkit-line-clamp: 1;
+}
+
 [data-z3-cell] [data-testid="composer-editor"] {
   min-height: calc(1lh + 0.5rem);
 }
