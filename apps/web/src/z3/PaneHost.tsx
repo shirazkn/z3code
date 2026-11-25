@@ -94,7 +94,11 @@ function TabGrid({ tab, active, background }: { tab: Tab; active: boolean; backg
     <div
       data-z3-grid={active ? "" : undefined}
       data-z3-split={multi || undefined}
-      className={cn("absolute inset-0", !active && "invisible opacity-0")}
+      // Content-visibility: a kept tab skips layout and paint, so a sidebar or window resize costs nothing.
+      className={cn(
+        "absolute inset-0",
+        !active && "invisible opacity-0 [content-visibility:hidden]",
+      )}
       inert={!active}
     >
       {cells.map((leaf) => {

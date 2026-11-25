@@ -8,6 +8,8 @@ const ADOPTED_KEY = "z3code:defaults-adopted";
 const DEFAULTS: ReadonlyArray<ClientSettingsPatch> = [
   { chatWidth: "wide", boringSidebarEnabled: true },
   { glassOpacity: 50 },
+  // A panel width transition lays out every pane on each frame.
+  { panelAnimationDurationMs: 0 },
 ];
 
 /** Selects the z3 settings once; Settings can change them afterwards. */

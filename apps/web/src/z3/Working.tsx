@@ -34,7 +34,10 @@ function spin(element: HTMLElement) {
   if (timer === null && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     timer = window.setInterval(() => {
       frame = (frame + 1) % FRAMES.length;
-      for (const spinner of spinners) spinner.textContent = FRAMES[frame]!;
+      for (const spinner of spinners) {
+        // A spinner in a kept tab would lay out text nobody sees.
+        if (spinner.closest("[inert]") === null) spinner.textContent = FRAMES[frame]!;
+      }
     }, FRAME_MS);
   }
   return () => {
