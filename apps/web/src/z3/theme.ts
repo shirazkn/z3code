@@ -10,20 +10,37 @@ import {
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 3;
+const THEME_VERSION = 4;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */
 const SELECT_VERSION = "1";
 
-// The dotfiles' Ghostty work profile: A24 Nocturne (dark) and A24 Daylight (light).
-function a24(
-  appearance: "light" | "dark",
-  palette: { bg: string; fg: string; green: string; cursor: string; selection: string },
-): ThemeColors {
+interface Palette {
+  readonly bg: string;
+  readonly fg: string;
+  /** Tints every surface and border. */
+  readonly tint: string;
+  /** Buttons, the focus ring, the active tab and the mode label. */
+  readonly accent: string;
+  readonly onAccent: string;
+  readonly accentHover: string;
+  readonly cursor: string;
+  readonly selection: string;
+}
+
+// The app icon's colors (assets/z3/app-icon.svg): teal ground, cream ink, one amber accent.
+function fromIcon(appearance: "light" | "dark", palette: Palette): ThemeColors {
   return {
-    ...createVividThemeColors(appearance, palette.bg, palette.green),
+    ...createVividThemeColors(appearance, palette.bg, palette.tint),
     text: palette.fg,
+    accent: palette.accent,
+    accentForeground: palette.onAccent,
+    focus: palette.accent,
+    update: palette.accent,
+    messageAction: palette.accent,
+    messageActionForeground: palette.onAccent,
+    messageActionHover: palette.accentHover,
     terminalBackground: palette.bg,
     terminalForeground: palette.fg,
     terminalCursor: palette.cursor,
@@ -31,19 +48,25 @@ function a24(
   };
 }
 
-const DARK = a24("dark", {
-  bg: "#0b0704",
-  fg: "#f4e7cc",
-  green: "#7e9c6a",
-  cursor: "#d9a95c",
-  selection: "#3c3026",
+const DARK = fromIcon("dark", {
+  bg: "#07110f",
+  fg: "#f3e9d2",
+  tint: "#3f9c86",
+  accent: "#e3a94f",
+  onAccent: "#1b1305",
+  accentHover: "#f0bb62",
+  cursor: "#e3a94f",
+  selection: "#17382f",
 });
-const LIGHT = a24("light", {
-  bg: "#f7efdb",
-  fg: "#382d1e",
-  green: "#5e7144",
-  cursor: "#a64e38",
-  selection: "#ecdebd",
+const LIGHT = fromIcon("light", {
+  bg: "#f6efdc",
+  fg: "#16302a",
+  tint: "#2f7a68",
+  accent: "#1f6a59",
+  onAccent: "#fffaf0",
+  accentHover: "#17544a",
+  cursor: "#b7791f",
+  selection: "#dfe3c8",
 });
 
 const Z3_THEME: ThemeDefinition = {

@@ -1,6 +1,6 @@
 # z3code
 
-A fork of [T3 Code](https://github.com/pingdotgg/t3code) `v0.1.11` with Zellij-style panes, tabs and modes, and the A24 look of the dotfiles' work profile. It is a separate Mac app (`com.shirazkn.z3code`, data in `~/.z3code`) and runs beside stock T3 Code.
+A fork of [T3 Code](https://github.com/pingdotgg/t3code) `v0.1.11` with Zellij-style panes, tabs and modes, and a theme in the app icon's colors (deep teal, cream, amber). It is a separate Mac app (`com.shirazkn.z3code`, data in `~/.z3code`) and runs beside stock T3 Code.
 
 ## Install (Mac, Apple silicon)
 
