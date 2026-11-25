@@ -81,7 +81,7 @@ function TabItem({ tab, index, active }: { tab: Tab; index: number; active: bool
             setMode("renameTab");
           }}
         >
-          <span className="truncate leading-none">{label}</span>
+          <span className="truncate leading-4">{label}</span>
         </button>
       )}
     </div>
