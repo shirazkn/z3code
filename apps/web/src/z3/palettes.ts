@@ -19,7 +19,7 @@ export interface PaletteTheme {
   readonly dark: PaletteVariant;
 }
 
-// Ice, glacier, blood and flame, on a blue-black night or a snow field.
+// One lightness band; the cold pair and the ochre stay muted, so the red is the one loud note.
 const KIDA: PaletteTheme = {
   id: "kida",
   label: "kida",
@@ -30,7 +30,7 @@ const KIDA: PaletteTheme = {
     neutralHover: "#d3dce5",
     onNeutral: "#0a0f16",
     selection: "#1c2733",
-    hues: ["#5f9fb8", "#3f76bd", "#c23a30", "#bf6a22"],
+    hues: ["#7ca6b4", "#5782bb", "#c74b43", "#af7940"],
     shade: "#000000",
   },
   light: {
@@ -40,7 +40,7 @@ const KIDA: PaletteTheme = {
     neutralHover: "#2a3642",
     onNeutral: "#f6f9fb",
     selection: "#d5dee6",
-    hues: ["#276f87", "#2b62a8", "#b8322a", "#a84f0e"],
+    hues: ["#306273", "#28528e", "#9a2925", "#7d4f1a"],
     shade: "rgb(17 26 35 / 0.3)",
   },
 };

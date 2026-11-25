@@ -100,6 +100,11 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
     bind("mod+shift+]", { do: "stepTab", step: 1 }),
     { keys: ["ctrl+["], action: { do: "stepTab", step: -1 }, always: true, macOnly: true },
     { keys: ["ctrl+]"], action: { do: "stepTab", step: 1 }, always: true, macOnly: true },
+    ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n): Bind => ({
+      keys: [`mod+${n}`],
+      action: { do: "goToTab", index: n - 1 },
+      always: true,
+    })),
   ],
   locked: [],
   pane: [
@@ -183,6 +188,9 @@ const MOVED_STOCK_KEYS: ReadonlyArray<readonly [string, string, string]> = [
   ["composer.stash", "mod+s", "mod+alt+s"],
   ["editor.openFavorite", "mod+o", "mod+alt+o"],
   ["rightPanel.new", "mod+t", "mod+alt+t"],
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(
+    (n) => [`thread.jump.${n}`, `mod+${n}`, `mod+alt+${n}`] as const,
+  ),
   ["thread.previous", "mod+shift+[", "mod+alt+["],
   ["thread.next", "mod+shift+]", "mod+alt+]"],
 ];
@@ -258,7 +266,8 @@ export const MODE_HINTS: Readonly<
   normal: [
     ["⌥N", "new pane"],
     ["fn←↓↑→  ⌃←↓↑→", "focus"],
-    ["⌘⇧[ ⌘⇧]  ⌃[ ⌃]", "previous / next tab"],
+    ["⌘⇧[ ⌘⇧]  ⌃[ ⌃]  fn[ fn]", "previous / next tab"],
+    ["⌘1–9", "go to tab"],
     ["⌥= ⌥−", "grow / shrink"],
     ["⌥[ ⌥]", "change layout"],
     ["⌥I ⌥O", "move tab"],

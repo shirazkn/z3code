@@ -46,11 +46,11 @@ The keymap is Zellij's default plus the dotfiles' `config.kdl` deltas, with the 
 
 Esc, Enter or the mode key again return to normal mode. A mode swallows the keys it does not bind.
 
-Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes. With no pane to the left or right they go to the previous or next tab and enter it at the near edge, so repeated presses walk every pane of every tab; with no pane and no other tab they bring the keyboard back to the focused pane. Alt+N new pane, Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ] and Ctrl+[ ] previous/next tab. Option+arrows stay the text field's word moves. Alt keys with nothing to act on do nothing; the page-scroll keys with nothing to act on keep their stock meaning. Each direct key has one chord per modifier family (Globe or Ctrl, Cmd, Alt); the Globe key itself is not a modifier an app can read, so Globe+[ cannot be a key. In a search field, Home, End and Ctrl+arrows stay the field's own keys.
+Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move between panes. With no pane to the left or right they go to the previous or next tab and enter it at the near edge, so repeated presses walk every pane of every tab; with no pane and no other tab they bring the keyboard back to the focused pane. Alt+N new pane, Alt+[ ] change the tab's layout, Alt+= Alt+− resize, Alt+I Alt+O move the tab, Shift+PageUp/PageDown and Ctrl+Shift+Up/Down page scroll, Cmd+Shift+[ ], Ctrl+[ ] and Globe+[ ] previous/next tab, Cmd+1–9 go to that tab. Option+arrows stay the text field's word moves. Alt keys with nothing to act on do nothing; the page-scroll keys with nothing to act on keep their stock meaning. Each direct key has one chord per modifier family (Globe or Ctrl, Cmd, Alt); Globe+arrows arrive as Home/End/PageUp/PageDown; Globe+[ ] is read from the browser's Fn modifier state (`keys.ts`). In a search field, Home, End and Ctrl+arrows stay the field's own keys.
 
 Esc in the prompt box (normal mode): takes back the latest queued message to edit; with none queued, it stops the thread.
 
-Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ]. macOS Hide keeps its menu item and loses Cmd+H.
+Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ], jump to thread Cmd+Alt+1–9. macOS Hide keeps its menu item and loses Cmd+H.
 
 ## Adding a palette theme (for agents)
 
