@@ -10,7 +10,7 @@ import {
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 4;
+const THEME_VERSION = 5;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */
@@ -49,7 +49,7 @@ function fromIcon(appearance: "light" | "dark", palette: Palette): ThemeColors {
 }
 
 const DARK = fromIcon("dark", {
-  bg: "#07110f",
+  bg: "#020706",
   fg: "#f3e9d2",
   tint: "#3f9c86",
   accent: "#e3a94f",
