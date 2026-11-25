@@ -50,20 +50,14 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   height: var(--z3-bar);
 }
 
-/* Dark themes: the chat area's background drops to true black at the screen's edges, the tab
-   bar's top included. The panes' own backgrounds give way, so one fade spans every pane. The
-   left edge fades only with the sidebar collapsed; an open sidebar is not a screen edge. */
+/* Dark themes: the chat area's background drops to true black at its top and bottom edges, the
+   tab bar's top included. The panes' own backgrounds give way, so one fade spans every pane. */
 .dark [data-z3-host] {
-  --z3-edge: black, rgb(0 0 0 / 0.3) 0.5rem, transparent 1.25rem;
-  --z3-edge-left: linear-gradient(to right, transparent, transparent);
+  --z3-edge: black, rgb(0 0 0 / 0.35) 0.75rem, transparent 2rem;
   background-image:
-    linear-gradient(to bottom, var(--z3-edge)), linear-gradient(to left, var(--z3-edge)),
-    linear-gradient(to top, var(--z3-edge)), var(--z3-edge-left), var(--surface-grain);
-  background-size: auto, auto, auto, auto, var(--surface-grain-size);
-}
-
-.dark [data-sidebar-state="collapsed"] [data-z3-host] {
-  --z3-edge-left: linear-gradient(to right, var(--z3-edge));
+    linear-gradient(to bottom, var(--z3-edge)), linear-gradient(to top, var(--z3-edge)),
+    var(--surface-grain);
+  background-size: auto, auto, var(--surface-grain-size);
 }
 
 .dark [data-z3-cell] > [data-slot="sidebar-inset"],
@@ -183,14 +177,18 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 }
 
 [data-z3-split] [data-z3-cell]:not([data-focused])::after {
-  background-color: color-mix(in srgb, var(--color-background) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+}
+
+[data-z3-mode] [data-z3-split] [data-z3-cell]:not([data-focused])::after {
+  background-color: color-mix(in srgb, var(--color-foreground) 16%, transparent);
 }
 
 .dark [data-z3-split] [data-z3-cell]:not([data-focused])::after {
   background-color: color-mix(in srgb, var(--color-background) 30%, transparent);
 }
 
-[data-z3-mode] [data-z3-split] [data-z3-cell]:not([data-focused])::after {
+.dark [data-z3-mode] [data-z3-split] [data-z3-cell]:not([data-focused])::after {
   background-color: color-mix(in srgb, var(--color-background) 50%, transparent);
 }
 
