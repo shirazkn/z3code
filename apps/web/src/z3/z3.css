@@ -60,6 +60,32 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   background-size: auto, auto, var(--surface-grain-size);
 }
 
+/* Each stock dark theme has its own ground: Ocean sinks to true black, Iris and Ember glow. */
+html[data-theme-id="ocean"].dark [data-z3-host] {
+  background-image: linear-gradient(to bottom, transparent 25%, black), var(--surface-grain);
+  background-size: auto, var(--surface-grain-size);
+}
+
+html[data-theme-id="iris"].dark [data-z3-host] {
+  background-image:
+    radial-gradient(
+      120% 55% at 50% 0%,
+      color-mix(in oklab, var(--primary) 16%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(to top, var(--z3-edge)), var(--surface-grain);
+}
+
+html[data-theme-id="ember"].dark [data-z3-host] {
+  background-image:
+    radial-gradient(
+      90% 60% at 0% 100%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(to bottom, var(--z3-edge)), var(--surface-grain);
+}
+
 .dark [data-z3-cell] > [data-slot="sidebar-inset"],
 .dark [data-z3-cell] > [data-slot="sidebar-inset"] > .bg-background,
 .dark [data-z3-cell] [data-workspace-area] {

@@ -16,7 +16,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - The sidebar lists the tabs first, in tab-bar order, each with the threads its panes show. Every other thread stays in one flat list below, without project folders. The sidebar reads the pane layout, so the two cannot differ.
 - Move a thread between tabs: drag its sidebar row onto a tab (in the sidebar or the tab bar) or onto + for a new tab, or right-click it and pick Open in tab / Move to tab. It takes a blank pane of that tab, else a new pane. Remove from tab, or a drop on the No tab strip, closes its pane; a tab closes with its last pane.
 - A sidebar thread row that is held lifts after 110 ms, to show it can move.
-- The dark variants of the built-in themes (T3 Chat, Grove, Ocean, Ember, Iris) have a much darker background (`packages/shared/src/themePalettes.ts`, with boot copies in `apps/web/index.html` and `apps/mobile/generated-uniwind-themes.css`).
+- The dark variants of the built-in themes (T3 Chat, Grove, Ocean, Ember, Iris) have a much darker background (`packages/shared/src/themePalettes.ts`, with boot copies in `apps/web/index.html` and `apps/mobile/generated-uniwind-themes.css`). Their light variants have stronger accent colors and tinted message bubbles and sidebars. In dark mode Ocean's chat area grades to true black at the bottom; Iris and Ember carry a faint glow of their accent (`z3.css`).
 - A focus move or a tab switch paints first; the thread views and the route follow in a later render.
 - With the sidebar collapsed the tab bar stays 28 px, except beside the macOS window buttons (a window that is not full screen).
 - The first launch sets the glass opacity to 50%.

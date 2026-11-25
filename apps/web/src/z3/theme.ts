@@ -10,7 +10,7 @@ import {
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 5;
+const THEME_VERSION = 6;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */
@@ -59,14 +59,14 @@ const DARK = fromIcon("dark", {
   selection: "#17382f",
 });
 const LIGHT = fromIcon("light", {
-  bg: "#f6efdc",
+  bg: "#fbf4e2",
   fg: "#16302a",
-  tint: "#2f7a68",
-  accent: "#1f6a59",
+  tint: "#2fa58a",
+  accent: "#d85a14",
   onAccent: "#fffaf0",
-  accentHover: "#17544a",
-  cursor: "#b7791f",
-  selection: "#dfe3c8",
+  accentHover: "#bf4c0c",
+  cursor: "#d85a14",
+  selection: "#f6d9bd",
 });
 
 const Z3_THEME: ThemeDefinition = {
