@@ -1,5 +1,3 @@
-import { HUES } from "./layout";
-
 interface PaletteVariant {
   readonly bg: string;
   readonly fg: string;
@@ -8,10 +6,8 @@ interface PaletteVariant {
   readonly neutralHover: string;
   readonly onNeutral: string;
   readonly selection: string;
-  /** Pane slot `k` takes `hues[k % hues.length]`. */
-  readonly hues: ReadonlyArray<string>;
-  /** Text on a hue. */
-  readonly onHue: string;
+  /** One per pane slot: `HUES` in layout.ts and the slot rules in z3.css. */
+  readonly hues: readonly [string, string, string, string];
   /** The color of the hard, unblurred shadows. */
   readonly shade: string;
 }
@@ -23,7 +19,7 @@ export interface PaletteTheme {
   readonly dark: PaletteVariant;
 }
 
-// Ice, glacier, blood, flame, dusk and bone, on a blue-black night or a snow field.
+// Ice, glacier, blood and flame, on a blue-black night or a snow field.
 const KIDA: PaletteTheme = {
   id: "kida",
   label: "kida",
@@ -34,8 +30,7 @@ const KIDA: PaletteTheme = {
     neutralHover: "#d3dce5",
     onNeutral: "#0a0f16",
     selection: "#1c2733",
-    hues: ["#8cc4d8", "#4d8fd6", "#e0483b", "#e27d2f", "#8474cf", "#cdbb8c"],
-    onHue: "#05070a",
+    hues: ["#5f9fb8", "#3f76bd", "#c23a30", "#bf6a22"],
     shade: "#000000",
   },
   light: {
@@ -45,8 +40,7 @@ const KIDA: PaletteTheme = {
     neutralHover: "#2a3642",
     onNeutral: "#f6f9fb",
     selection: "#d5dee6",
-    hues: ["#276f87", "#2b62a8", "#b8322a", "#a84f0e", "#5d4fa3", "#806a2a"],
-    onHue: "#ffffff",
+    hues: ["#276f87", "#2b62a8", "#b8322a", "#a84f0e"],
     shade: "rgb(17 26 35 / 0.3)",
   },
 };
@@ -61,10 +55,7 @@ export function paletteOf(themeId: string, mode: "light" | "dark"): ReadonlyArra
 export function paletteCss(theme: PaletteTheme): string {
   const vars = (variant: PaletteVariant) =>
     [
-      ...Array.from({ length: HUES }, (_, slot) => {
-        return `--z3-hue-${slot}: ${variant.hues[slot % variant.hues.length]};`;
-      }),
-      `--z3-on-hue: ${variant.onHue};`,
+      ...variant.hues.map((hue, slot) => `--z3-hue-${slot}: ${hue};`),
       `--z3-shade: ${variant.shade};`,
     ].join(" ");
   const root = `html[data-theme-id="${theme.id}"]`;

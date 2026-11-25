@@ -27,7 +27,7 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 - Each pane has a one-line title bar with its thread. Panel buttons and the project card show on the focused pane only. In a new thread, the project name in the title is the project picker: a search list of the known projects, and Add project.
 - The focused pane draws its text at full strength. In a split the other panes fade back (light themes shade them, dark themes veil them); a mode fades them further and dims the sidebar.
 - UI text runs one step under the chat text. Every color comes from the active theme.
-- A palette theme (`kida`, after `z3` in Settings; `palettes.ts`) gives each pane one of its 6 colors: the pane's top line, flat ground, buttons, focus ring and message bubbles. The sidebar and tab bar keep the palette's neutral. The theme is flat: shadows have no blur, and only the tab bar fades, to black at its top. A new pane takes the color its tab uses least and keeps it (`paintLeaves` in `layout.ts`). Any theme whose CSS defines `--z3-hue-0` to `--z3-hue-5` and `--z3-on-hue` colors panes this way. Settings shows a palette theme as a strip of its colors (`components/settings/ThemePreviewCircles.tsx`).
+- A palette theme (`kida`, after `z3` in Settings; `palettes.ts`) gives each pane one of its 4 colors: the pane's top line, flat ground, buttons, focus ring and message bubbles. The sidebar and tab bar keep the palette's neutral. The theme is flat: shadows have no blur, and only the tab bar fades, to black at its top. A new pane takes a random one of the colors its tab uses least and keeps it (`paintLeaves` in `layout.ts`). Any theme whose CSS defines `--z3-hue-0` to `--z3-hue-3` colors panes this way. Settings shows a palette theme as a strip of its colors (`components/settings/ThemePreviewCircles.tsx`).
 - The first launch selects the z3 theme, the wide chat width and the grouped sidebar; Settings can change them.
 
 ## Keys
@@ -51,6 +51,16 @@ Normal mode: Globe+arrows (Home/End/PageUp/PageDown) and Ctrl+arrows move betwee
 Esc in the prompt box (normal mode): takes back the latest queued message to edit; with none queued, it stops the thread.
 
 Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Shift+O, stash Cmd+Alt+S, open in editor Cmd+Alt+O, new right-panel tab Cmd+Alt+T, previous/next thread Cmd+Alt+[ ]. macOS Hide keeps its menu item and loses Cmd+H.
+
+## Adding a palette theme (for agents)
+
+1. Ask the user for the theme's name. Do not choose one.
+2. Never name the artwork, album, film or other media that inspired a theme: not in code, comments, commits, docs or anywhere else in the repo. The theme's name may hint at it.
+3. Add one `PaletteTheme` to `PALETTE_THEMES` in `apps/web/src/z3/palettes.ts`. Each of `light` and `dark` needs a background, a text color, one neutral and exactly 4 `hues`. Stay inside the source's palette; do not invent extra colors.
+4. Raise `THEME_VERSION` in `apps/web/src/z3/theme.ts`, so installed copies update.
+5. Check contrast: each hue against the background, and the text color against the background.
+
+No other file changes. `theme.ts` builds the theme, `z3.css` colors the panes, and Settings draws the color strip.
 
 ## Fork layout
 

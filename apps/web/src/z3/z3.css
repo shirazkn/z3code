@@ -195,7 +195,7 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   );
 }
 
-/* A palette theme defines `--z3-hue-0` to `-5` (palettes.ts) and each pane takes one as its
+/* A palette theme defines `--z3-hue-0` to `-3` (palettes.ts) and each pane takes one as its
    accent and flat ground. Without them these declarations are invalid, and so inherit the theme's own values. */
 [data-z3-hue="0"] {
   --z3-hue: var(--z3-hue-0);
@@ -209,15 +209,11 @@ html[data-theme-id="ember"].dark [data-z3-host] {
 [data-z3-hue="3"] {
   --z3-hue: var(--z3-hue-3);
 }
-[data-z3-hue="4"] {
-  --z3-hue: var(--z3-hue-4);
-}
-[data-z3-hue="5"] {
-  --z3-hue: var(--z3-hue-5);
-}
 
 [data-z3-cell][data-z3-hue] {
   --primary: var(--z3-hue);
+  /* White text on a dark hue, black on a light one. */
+  --z3-on-hue: oklch(from var(--z3-hue) clamp(0, (0.6 - l) * 999, 1) 0 0);
   --primary-foreground: var(--z3-on-hue);
   --message-action: var(--z3-hue);
   --message-action-foreground: var(--z3-on-hue);
@@ -225,7 +221,7 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   --ring: var(--z3-hue);
   --message-surface: color-mix(in oklab, var(--z3-hue) 16%, var(--background));
   --terminal-cursor: var(--z3-hue);
-  --z3-hue-line: inset 0 2px 0 var(--z3-hue);
+  --z3-hue-line: inset 0 1px 0 var(--z3-hue);
   --z3-pane: color-mix(in oklab, var(--z3-hue) 15%, var(--app-theme-canvas));
   --background: var(--z3-pane);
   --app-chrome-background: var(--z3-pane);

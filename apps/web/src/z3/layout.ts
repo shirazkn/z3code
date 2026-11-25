@@ -137,27 +137,29 @@ function mapNode(node: PaneNode, fn: (node: PaneNode) => PaneNode): PaneNode {
   return fn(mapped);
 }
 
-export const HUES = 6;
+/** A palette theme has this many colors (palettes.ts, z3.css). */
+const HUES = 4;
 
-/** Gives each pane with no hue the one its tab uses least, then the layout; a set hue stays. */
+/** Gives each pane with no hue a random one of those its tab, then the layout, uses least. */
 export function paintLeaves(layout: Layout): Layout {
+  // A stored hue past the palette's size counts as none.
+  const painted = (leaf: Leaf) => leaf.hue !== undefined && leaf.hue < HUES;
   const count = (panes: ReadonlyArray<Leaf>) => {
     const used = Array.from({ length: HUES }, () => 0);
-    for (const pane of panes) if (pane.hue !== undefined) used[pane.hue % HUES]! += 1;
+    for (const pane of panes) if (painted(pane)) used[pane.hue!]! += 1;
     return used;
   };
   const all = layout.tabs.flatMap((tab) => leaves(tab.root));
-  if (all.every((leaf) => leaf.hue !== undefined)) return layout;
+  if (all.every(painted)) return layout;
   const total = count(all);
   const tabs = layout.tabs.map((tab) => {
     const local = count(leaves(tab.root));
     const root = mapNode(tab.root, (node) => {
-      if (isSplit(node) || node.hue !== undefined) return node;
-      let hue = 0;
-      for (let next = 1; next < HUES; next++) {
-        const fewer = local[next]! - local[hue]! || total[next]! - total[hue]!;
-        if (fewer < 0) hue = next;
-      }
+      if (isSplit(node) || painted(node)) return node;
+      const rank = local.map((used, hue) => used * all.length + total[hue]!);
+      const least = Math.min(...rank);
+      const free = rank.flatMap((value, hue) => (value === least ? [hue] : []));
+      const hue = free[Math.floor(Math.random() * free.length)]!;
       local[hue]! += 1;
       total[hue]! += 1;
       return { ...node, hue };
