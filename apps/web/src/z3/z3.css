@@ -283,8 +283,8 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 
 /* Hairline scrollbars: faint at rest, stronger while the pointer is in their scroller. */
 :root {
-  --app-scrollbar-width: 3px;
-  --app-scrollbar-thumb: color-mix(in srgb, var(--color-foreground) 14%, transparent);
+  --app-scrollbar-width: 2px;
+  --app-scrollbar-thumb: color-mix(in srgb, var(--color-foreground) 6%, transparent);
   --app-scrollbar-thumb-hover: color-mix(in srgb, var(--color-foreground) 40%, transparent);
 }
 
