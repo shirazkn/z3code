@@ -67,6 +67,11 @@ describe("resolveKey", () => {
     expect(c.kind === "bind" && c.bind.action).toEqual({ do: "newPane", dir: "right" });
     const r = resolve("pane", "r");
     expect(r.kind === "bind" && r.bind.action).toEqual({ do: "renamePane" });
+    // x settles and closes; s only closes.
+    const x = resolve("pane", "x");
+    expect(x.kind === "bind" && x.bind.action).toEqual({ do: "settlePane" });
+    const s = resolve("pane", "s");
+    expect(s.kind === "bind" && s.bind.action).toEqual({ do: "closePane" });
   });
 
   it("moves the border with h and Shift+H alike in resize mode", () => {

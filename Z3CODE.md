@@ -33,15 +33,15 @@ It builds `z3code.app` from this checkout, copies it to `/Applications`, signs i
 
 The keymap is Zellij's default plus the dotfiles' `config.kdl` deltas, with the changes noted below. Its one source is `apps/web/src/z3/keymap.ts`; Settings → Keybindings → Zellij modes lists it.
 
-| Mode (key)             | Keys                                                                                                                                      |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Pane (Cmd+P)           | hjkl/arrows focus · p next · ; last · n new (largest pane) · d down · c right · x close · f fullscreen · r rename thread                  |
-| Tab (Cmd+T)            | hl/jk/arrows switch · n new · x close · r rename · 1–9 go · Tab last · b break pane to new tab · [ ] break pane left/right · Space layout |
-| Resize (Cmd+N)         | hjkl/arrows move the pane's border that way (opposite keys undo) · = + − grow/shrink all edges                                            |
-| Move (Cmd+H)           | hjkl swap with neighbour · n/Tab next · p previous                                                                                        |
-| Scroll (Cmd+S)         | jk line · du half page · hl/PageUp/PageDown/Ctrl+F/Ctrl+B page · [ ] previous/next turn · s find · Ctrl+C bottom                          |
-| Session (Cmd+O)        | w thread palette · c settings                                                                                                             |
-| Lock (Caps Lock = F18) | every key goes to the page until Caps Lock again                                                                                          |
+| Mode (key)             | Keys                                                                                                                                                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pane (Cmd+P)           | hjkl/arrows focus · p next · ; last · n new (largest pane) · d down · c right · x settle the thread and close the pane · s stash (close the pane, the thread stays open) · f fullscreen · r rename thread |
+| Tab (Cmd+T)            | hl/jk/arrows switch · n new · x close · r rename · 1–9 go · Tab last · b break pane to new tab · [ ] break pane left/right · Space layout                                                                 |
+| Resize (Cmd+N)         | hjkl/arrows move the pane's border that way (opposite keys undo) · = + − grow/shrink all edges                                                                                                            |
+| Move (Cmd+H)           | hjkl swap with neighbour · n/Tab next · p previous                                                                                                                                                        |
+| Scroll (Cmd+S)         | jk line · du half page · hl/PageUp/PageDown/Ctrl+F/Ctrl+B page · [ ] previous/next turn · s find · Ctrl+C bottom                                                                                          |
+| Session (Cmd+O)        | w thread palette · c settings                                                                                                                                                                             |
+| Lock (Caps Lock = F18) | every key goes to the page until Caps Lock again                                                                                                                                                          |
 
 Esc, Enter or the mode key again return to normal mode. A mode swallows the keys it does not bind.
 

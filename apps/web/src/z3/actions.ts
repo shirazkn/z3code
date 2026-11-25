@@ -1,5 +1,5 @@
 import { scopedThreadKey, scopeProjectRef } from "@t3tools/client-runtime/environment";
-import type { ScopedProjectRef } from "@t3tools/contracts";
+import type { ScopedProjectRef, ScopedThreadRef } from "@t3tools/contracts";
 import type { AnyRouter } from "@tanstack/react-router";
 
 import { openThreadFind } from "../components/chat/threadFindStore";
@@ -50,6 +50,14 @@ export function registerHost(router: AnyRouter | null): void {
   host = router === null ? null : { router };
   document.documentElement.toggleAttribute("data-z3-panes", router !== null);
   if (router === null && useZ3Store.getState().mode !== "locked") setMode("normal");
+}
+
+type Settle = (threadRef: ScopedThreadRef) => Promise<boolean>;
+let settle: Settle | null = null;
+
+/** `SettleBridge` lends the stock settle command, which lives in a hook. */
+export function registerSettle(next: Settle | null): void {
+  settle = next;
 }
 
 export function isHostActive(): boolean {
@@ -218,6 +226,19 @@ export function runAction(action: Action): boolean {
         return true;
       }
       return runAction({ do: "closeTab" });
+    }
+    case "settlePane": {
+      const target = focusedLeaf(layout)?.target;
+      // An empty pane or an unsent draft has nothing to settle.
+      if (target?.kind !== "server") return runAction({ do: "closePane" });
+      if (settle === null) {
+        console.warn("[z3] settle is not registered; the pane stays", focused);
+        return false;
+      }
+      void settle(target.threadRef).then((settled) => {
+        if (settled) removeLeaf(focused);
+      });
+      return true;
     }
     case "fullscreen":
       if (!isSplit(tab.root)) return false;
@@ -392,12 +413,17 @@ function returnFocusToPane(): boolean {
 
 /** A pane whose thread cannot show (deleted, archived, hidden) closes, or empties if it is alone. */
 export function dropPaneTarget(leafId: string): void {
+  console.info("[z3] pane target unavailable; dropping it", leafId);
+  removeLeaf(leafId);
+}
+
+/** Closes a pane in any tab; a tab's only pane empties instead. */
+function removeLeaf(leafId: string): void {
   const { layout } = useZ3Store.getState();
   const tab = layout.tabs.find((candidate) =>
     leaves(candidate.root).some((leaf) => leaf.id === leafId),
   );
   if (tab === undefined) return;
-  console.info("[z3] pane target unavailable; dropping it", leafId);
   const remaining = closePane(tab, leafId);
   commit(
     remaining === null

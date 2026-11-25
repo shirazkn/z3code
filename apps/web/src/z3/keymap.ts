@@ -24,6 +24,7 @@ export type Action =
   | { readonly do: "lastPane" }
   | { readonly do: "newPane"; readonly dir?: "right" | "down" }
   | { readonly do: "closePane" }
+  | { readonly do: "settlePane" }
   | { readonly do: "fullscreen" }
   | { readonly do: "renamePane" }
   | { readonly do: "newTab" }
@@ -110,7 +111,9 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
     // dotfiles: c and r swapped back to the older defaults.
     bind("c", { do: "newPane", dir: "right" }, "normal"),
     bind("r", { do: "renamePane" }, "normal"),
-    bind("x", { do: "closePane" }, "normal"),
+    // x settles the thread, then closes its pane; s only closes the pane (the thread stays open).
+    bind("x", { do: "settlePane" }, "normal"),
+    bind("s", { do: "closePane" }, "normal"),
     bind("f", { do: "fullscreen" }, "normal"),
   ],
   tab: [
@@ -267,7 +270,8 @@ export const MODE_HINTS: Readonly<
     ["n", "new pane"],
     ["d", "split down"],
     ["c", "split right"],
-    ["x", "close"],
+    ["x", "settle"],
+    ["s", "stash"],
     ["f", "fullscreen"],
     ["r", "rename"],
     ["p ;", "next / last"],
@@ -310,7 +314,8 @@ export const MODE_BAR: Readonly<
   pane: [
     ["n", "new"],
     ["d", "down"],
-    ["x", "close"],
+    ["x", "settle"],
+    ["s", "stash"],
     ["f", "full"],
     ["r", "rename"],
   ],

@@ -21,6 +21,7 @@ import {
   targetKey,
 } from "./layout";
 import { PaneArtifact } from "./PaneArtifact";
+import { SettleBridge } from "./SettleBridge";
 import { useZ3Store } from "./store";
 import { TabStrip } from "./TabStrip";
 import "./z3.css";
@@ -68,6 +69,7 @@ export function PaneHost({
       inert={background}
       data-z3-host
     >
+      <SettleBridge />
       <TabStrip layout={layout} />
       <div className="relative min-h-0 flex-1">
         {layout.tabs
