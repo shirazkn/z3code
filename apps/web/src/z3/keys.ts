@@ -6,17 +6,28 @@ import { setMode, useZ3Store } from "./store";
 // Dialogs, menus, lists and the terminal keep their keys (Home, End, Escape, mode keys).
 const OWN_KEYS = '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], .xterm';
 
+// A held key must not repeat these.
+const ONCE = new Set(["newPane", "newTab", "closePane", "closeTab", "breakPane"]);
+
 function onKeyDown(event: KeyboardEvent): void {
   if (event.isComposing || !isHostActive()) return;
   if (event.target instanceof Element && event.target.closest(OWN_KEYS)) return;
-  const resolution = resolveKey(useZ3Store.getState().mode, event, navigator.platform);
+  const mode = useZ3Store.getState().mode;
+  const resolution = resolveKey(mode, event, navigator.platform);
   if (resolution.kind === "pass") return;
+  // A search field keeps Home, End and Ctrl+arrows; the composer is not an input.
+  const inField = event.target instanceof Element && event.target.matches("input, textarea");
+  const plain = !event.altKey && !event.metaKey;
+  if (mode === "normal" && inField && plain && resolution.kind === "bind" && resolution.bind.action)
+    return;
   if (resolution.kind === "bind") {
     const { action, next } = resolution.bind;
-    if (action !== undefined) {
+    if (action !== undefined && event.repeat && ONCE.has(action.do)) {
+      // Swallowed below.
+    } else if (action !== undefined) {
       const acted = runAction(action);
       if (next !== undefined) setMode(next);
-      // A normal-mode key with nothing to act on keeps its stock meaning.
+      // A plain normal-mode key with nothing to act on keeps its stock meaning.
       if (!acted && !resolution.swallow) return;
     } else if (next !== undefined && !event.repeat) {
       setMode(next);

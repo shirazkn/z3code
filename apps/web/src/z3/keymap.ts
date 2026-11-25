@@ -159,7 +159,7 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
   session: [bind("w", { do: "palette" }, "normal"), bind("c", { do: "settings" }, "normal")],
 };
 
-/** Zellij's `shared_except "locked"` binds, live in every unlocked mode. */
+/** Zellij's `shared_except "locked"` binds, live in every unlocked mode. Alt+letter would type a symbol. */
 const UNLOCKED: ReadonlyArray<Bind> = [
   bind("alt+n", { do: "newPane" }),
   // Not Alt+arrows: those stay the text field's word and paragraph moves.
@@ -173,7 +173,7 @@ const UNLOCKED: ReadonlyArray<Bind> = [
   bind("alt+]", { do: "swapLayout", step: 1 }),
   bind("alt+i", { do: "moveTab", step: -1 }),
   bind("alt+o", { do: "moveTab", step: 1 }),
-];
+].map((b): Bind => ({ ...b, always: true }));
 
 // dotfiles: Caps Lock is F18 (hidutil), and it toggles the lock.
 const LOCK_KEY = "f18";

@@ -52,7 +52,8 @@ describe("resolveKey", () => {
     const layout = resolve("normal", "alt+]");
     expect(layout.kind === "bind" && layout.bind.action).toEqual({ do: "swapLayout", step: 1 });
     const direct = resolve("normal", "alt+h");
-    expect(direct.kind === "bind" && direct.swallow).toBe(false);
+    // Alt+H with no pane to the left must not type a symbol.
+    expect(direct.kind === "bind" && direct.swallow).toBe(true);
   });
 
   it("keeps the dotfiles deltas: c splits right, r renames", () => {
