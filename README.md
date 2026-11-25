@@ -1,4 +1,21 @@
 <p align="center">
+  <img src="./assets/z3/z3code-web-icon-192x192.png" width="80" height="80" alt="z3code logo" />
+</p>
+
+<h1 align="center">z3code</h1>
+
+<p align="center">A fork of T3 Code with Zellij-style panes, tabs and modes.</p>
+
+z3code tiles several agent threads in one window and drives them from the keyboard with Zellij's keymap. It is a separate Mac app and runs beside stock T3 Code.
+
+- Install, keymap and fork layout: [Z3CODE.md](./Z3CODE.md)
+- Upstream: [pingdotgg/t3code](https://github.com/pingdotgg/t3code)
+
+The rest of this page is the upstream T3 Code README.
+
+---
+
+<p align="center">
   <a href="https://t3.codes">
     <img src="./assets/prod/t3-black-web-icon-192x192.png" width="80" height="80" alt="T3 Code logo" />
   </a>
