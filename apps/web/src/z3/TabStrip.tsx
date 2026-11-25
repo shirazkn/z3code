@@ -5,7 +5,7 @@ import { isElectron } from "../env";
 import { cn } from "../lib/utils";
 import { COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS } from "../workspaceTitlebar";
 import { activateTabById, closeTabById, renameActiveTab, runAction } from "./actions";
-import { MODE_HINTS, type Mode } from "./keymap";
+import { MODE_BAR, type Mode } from "./keymap";
 import type { Layout, Tab } from "./layout";
 import { tabDropProps, tabLabel } from "./SidebarTabs";
 import { setMode, useZ3Store } from "./store";
@@ -87,12 +87,12 @@ function TabItem({ tab, index, active }: { tab: Tab; index: number; active: bool
   );
 }
 
-/** The mode's name and keys, shown while a mode is on; Zellij's status bar, in one line. */
+/** The mode's name and main keys, shown while a mode is on; Zellij's status bar, in one line. */
 function ModeLabel() {
   const mode = useZ3Store((state) => state.mode);
   const name = MODE_NAME[mode];
   if (name === undefined) return null;
-  const hints = mode === "locked" ? [] : MODE_HINTS[mode as keyof typeof MODE_HINTS];
+  const hints = mode in MODE_BAR ? MODE_BAR[mode as keyof typeof MODE_BAR] : [];
   return (
     <div data-z3-mode-label className="flex min-w-0 shrink items-center gap-2">
       <span
@@ -103,8 +103,12 @@ function ModeLabel() {
       >
         {name}
       </span>
-      <span className="truncate text-muted-foreground leading-none">
-        {hints.map(([keys, action]) => `${keys} ${action}`).join(" · ")}
+      <span className="flex min-w-0 gap-2.5 overflow-hidden whitespace-nowrap text-muted-foreground leading-none">
+        {hints.map(([keys, action]) => (
+          <span key={keys}>
+            <b className="font-semibold text-primary">{keys}</b> {action}
+          </span>
+        ))}
       </span>
     </div>
   );

@@ -307,6 +307,40 @@ export const MODE_HINTS: Readonly<
   ],
 };
 
+/** The few keys the tab bar shows while a mode is on; Settings lists them all. */
+export const MODE_BAR: Readonly<
+  Record<Exclude<Mode, "normal" | "locked" | "renameTab">, ReadonlyArray<readonly [string, string]>>
+> = {
+  pane: [
+    ["n", "new"],
+    ["d", "down"],
+    ["x", "close"],
+    ["f", "full"],
+    ["r", "rename"],
+  ],
+  tab: [
+    ["n", "new"],
+    ["x", "close"],
+    ["r", "rename"],
+    ["1–9", "go"],
+    ["b", "break"],
+  ],
+  resize: [
+    ["hjkl", "border"],
+    ["= −", "size"],
+  ],
+  move: [["hjkl", "swap"]],
+  scroll: [
+    ["j k", "line"],
+    ["d u", "half"],
+    ["s", "find"],
+  ],
+  session: [
+    ["w", "threads"],
+    ["c", "settings"],
+  ],
+};
+
 function sameShortcut(a: KeybindingShortcut, b: KeybindingShortcut): boolean {
   return (
     a.key === b.key &&
