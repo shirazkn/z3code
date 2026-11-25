@@ -601,9 +601,17 @@ export default function ChatView(props: ChatViewProps) {
   const navigate = useNavigate();
   // Selects primitives: an object here is new on every router store update, which
   // re-renders ChatView on unrelated navigation state changes.
-  const citationHref = useLocation({ select: (location) => location.href });
+  // z3: a location without a citation selects constants, so a route change (every pane focus)
+  // does not render every pane's ChatView.
+  const citationHref = useLocation({
+    select: (location) =>
+      assistantCitationFromLocation(location.href) === null ? "" : location.href,
+  });
   const citationKey = useLocation({
-    select: (location) => location.state.assistantCitationActivation ?? location.state.__TSR_key,
+    select: (location) =>
+      assistantCitationFromLocation(location.href) === null
+        ? undefined
+        : (location.state.assistantCitationActivation ?? location.state.__TSR_key),
   });
   const citationLocation = { href: citationHref, key: citationKey };
   const locationCitation = assistantCitationFromLocation(citationLocation.href);

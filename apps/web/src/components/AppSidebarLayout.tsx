@@ -433,7 +433,11 @@ export function AppSidebarLayout({
   const { active: panelAnimationsActive, durationMs: panelAnimationDurationMs } =
     usePanelAnimationSettings();
   const pathname = useLocation({ select: (location) => location.pathname });
-  const panelAnimationsSuppressed = usePanelNavigationSuppression(pathname);
+  // z3: with panel animations off there is nothing to suppress, and each flip of this context
+  // value renders every pane's ChatView. A pane focus changes the pathname.
+  const panelAnimationsSuppressed = usePanelNavigationSuppression(
+    panelAnimationDurationMs > 0 ? pathname : "",
+  );
   const routePanelAnimationsActive = panelAnimationsActive && !panelAnimationsSuppressed;
   const isMacosDesktop = isElectron && isMacPlatform(navigator.platform);
   const [sidebarWidth, setSidebarWidth] = useState(readInitialThreadSidebarWidth);
