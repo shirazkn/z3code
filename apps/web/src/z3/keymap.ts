@@ -248,7 +248,7 @@ export function resolveKey(mode: Mode, event: ShortcutEventLike, platform: strin
   return modal ? { kind: "swallow" } : { kind: "pass" };
 }
 
-/** Each mode's keys for Settings, as [keys, what they do]. */
+/** Each mode's keys for Settings, as [keys, what they do]. `HintKeys` draws a run of arrows. */
 export const MODE_HINTS: Readonly<
   Record<Exclude<Mode, "locked" | "renameTab">, ReadonlyArray<readonly [string, string]>>
 > = {
@@ -256,7 +256,7 @@ export const MODE_HINTS: Readonly<
     ["⌥N", "new pane"],
     ["⌥H ⌥J ⌥K ⌥L", "focus"],
     ["Home End PgUp PgDn", "focus"],
-    ["⌃ arrows", "focus"],
+    ["⌃←↓↑→", "focus"],
     ["⌘↑ ⌘↓", "focus up / down"],
     ["⌘⇧[ ⌘⇧]", "previous / next tab"],
     ["⌥= ⌥−", "grow / shrink"],
@@ -266,7 +266,7 @@ export const MODE_HINTS: Readonly<
     ["⇪", "lock / unlock"],
   ],
   pane: [
-    ["h j k l", "focus"],
+    ["←↓↑→", "focus"],
     ["n", "new pane"],
     ["d", "split down"],
     ["c", "split right"],
@@ -276,7 +276,7 @@ export const MODE_HINTS: Readonly<
     ["p ;", "next / last"],
   ],
   tab: [
-    ["h l", "switch"],
+    ["←→", "switch"],
     ["n", "new tab"],
     ["x", "close"],
     ["r", "rename"],
@@ -286,17 +286,17 @@ export const MODE_HINTS: Readonly<
     ["space", "change layout"],
   ],
   resize: [
-    ["h j k l", "move border"],
+    ["←↓↑→", "move border"],
     ["= −", "grow / shrink"],
   ],
   move: [
-    ["h j k l", "swap"],
+    ["←↓↑→", "swap"],
     ["n p", "next / previous"],
   ],
   scroll: [
-    ["j k", "line"],
+    ["↓↑", "line"],
     ["d u", "half page"],
-    ["h l", "page"],
+    ["←→", "page"],
     ["[ ]", "turn"],
     ["s", "find"],
     ["⌃C", "bottom"],
@@ -326,12 +326,12 @@ export const MODE_BAR: Readonly<
     ["b", "break"],
   ],
   resize: [
-    ["hjkl", "border"],
+    ["←↓↑→", "border"],
     ["= −", "size"],
   ],
-  move: [["hjkl", "swap"]],
+  move: [["←↓↑→", "swap"]],
   scroll: [
-    ["j k", "line"],
+    ["↓↑", "line"],
     ["d u", "half"],
     ["s", "find"],
   ],

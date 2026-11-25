@@ -1,3 +1,4 @@
+import { HintKeys } from "./ArrowKeys";
 import { PlusIcon, XIcon } from "lucide-react";
 
 import { useComposerHandleContext } from "../composerHandleContext";
@@ -106,7 +107,10 @@ function ModeLabel() {
       <span className="flex min-w-0 gap-2.5 overflow-hidden whitespace-nowrap text-muted-foreground leading-none">
         {hints.map(([keys, action]) => (
           <span key={keys}>
-            <b className="font-semibold text-primary">{keys}</b> {action}
+            <b className="font-semibold text-primary">
+              <HintKeys keys={keys} />
+            </b>{" "}
+            {action}
           </span>
         ))}
       </span>

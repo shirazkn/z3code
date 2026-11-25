@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import { SettingsRow, SettingsSection } from "../components/settings/settingsLayout";
 import { Kbd } from "../components/ui/kbd";
 import { formatShortcutLabel } from "../keybindings";
+import { HintKeys } from "./ArrowKeys";
 import { MODE_HINTS, MODE_KEYS } from "./keymap";
 
 const MODE_TITLE: Record<keyof typeof MODE_HINTS, string> = {
@@ -31,7 +32,9 @@ export function Z3KeymapSection() {
               <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {MODE_HINTS[mode].map(([keys, label]) => (
                   <Fragment key={keys}>
-                    <Kbd>{keys}</Kbd>
+                    <Kbd>
+                      <HintKeys keys={keys} />
+                    </Kbd>
                     <span className="me-1">{label}</span>
                   </Fragment>
                 ))}

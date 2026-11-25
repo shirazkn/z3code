@@ -173,7 +173,7 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  transition: background-color 80ms ease-out;
+  transition: background-color 40ms ease-out;
 }
 
 [data-z3-split] [data-z3-cell]:not([data-focused])::after {
@@ -193,7 +193,7 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 }
 
 [data-sidebar="sidebar"] {
-  transition: opacity 80ms ease-out;
+  transition: opacity 40ms ease-out;
 }
 
 [data-z3-mode] [data-sidebar="sidebar"] {
@@ -243,8 +243,8 @@ html[data-theme-id] [data-app-sidebar] > [data-slot="sidebar-inner"] {
 /* A held row lifts, to show it can move. The delay keeps a plain click still. */
 [data-sidebar="sidebar"] li[data-thread-item] > * {
   transition:
-    scale 90ms ease-out,
-    box-shadow 90ms ease-out;
+    scale 50ms ease-out,
+    box-shadow 50ms ease-out;
 }
 
 /* The row's own paint containment would clip the lift. */
@@ -309,8 +309,8 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
 [data-z3-cell],
 [data-z3-mode-label] {
   transition:
-    opacity 70ms ease-out,
-    translate 70ms ease-out;
+    opacity 40ms ease-out,
+    translate 40ms ease-out;
 
   @starting-style {
     opacity: 0;
@@ -368,4 +368,17 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
 /* An empty thread shows no hint: in a short pane it sits under the provider notices. */
 [data-z3-cell] [data-chat-empty] {
   display: none;
+}
+
+/* Stock transitions run short. Unlayered, so these beat Tailwind's duration utilities. */
+:root {
+  --default-transition-duration: 50ms;
+}
+
+[class*="duration-"]:not([class*="duration-0"], [class*="duration-2000"]) {
+  &,
+  &::before,
+  &::after {
+    transition-duration: 50ms;
+  }
 }
