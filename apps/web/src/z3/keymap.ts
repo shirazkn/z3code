@@ -51,6 +51,8 @@ export interface Bind {
   readonly next?: Mode;
   /** Never falls through to the page, even with nothing to act on. */
   readonly always?: true;
+  /** Off where Ctrl is the stock modifier, and the chord a stock command. */
+  readonly macOnly?: true;
 }
 
 const bind = (keys: string | ReadonlyArray<string>, action?: Action, next?: Mode): Bind => ({
@@ -90,13 +92,13 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
           : { do: "focus", dir },
       always: true,
     })),
-    // dotfiles (Ghostty): Cmd+Up/Down, and Cmd+Shift+[ ] for tabs.
-    bind("mod+arrowup", { do: "focus", dir: "up" }),
-    bind("mod+arrowdown", { do: "focus", dir: "down" }),
     bind(["shift+pageup", "ctrl+shift+arrowup"], { do: "scroll", by: "page", step: -1 }),
     bind(["shift+pagedown", "ctrl+shift+arrowdown"], { do: "scroll", by: "page", step: 1 }),
+    // dotfiles (Ghostty): Cmd+Shift+[ ] for tabs. Ctrl+[ ] pairs with Ctrl+arrows.
     bind("mod+shift+[", { do: "stepTab", step: -1 }),
     bind("mod+shift+]", { do: "stepTab", step: 1 }),
+    { keys: ["ctrl+["], action: { do: "stepTab", step: -1 }, always: true, macOnly: true },
+    { keys: ["ctrl+]"], action: { do: "stepTab", step: 1 }, always: true, macOnly: true },
   ],
   locked: [],
   pane: [
@@ -124,8 +126,6 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
       bind(`${n}`, { do: "goToTab", index: n - 1 }, "normal"),
     ),
     bind("tab", { do: "lastTab" }),
-    bind("space", { do: "swapLayout", step: 1 }),
-    bind("shift+space", { do: "swapLayout", step: -1 }),
   ],
   resize: [
     // Not Zellij's grow-only Increase/Decrease: the border follows the key, so opposites undo.
@@ -162,11 +162,6 @@ const KEYMAP: Readonly<Record<Exclude<Mode, "renameTab">, ReadonlyArray<Bind>>> 
 /** Zellij's `shared_except "locked"` binds, live in every unlocked mode. Alt+letter would type a symbol. */
 const UNLOCKED: ReadonlyArray<Bind> = [
   bind("alt+n", { do: "newPane" }),
-  // Not Alt+arrows: those stay the text field's word and paragraph moves.
-  bind("alt+h", { do: "focus", dir: "left", orTab: true }),
-  bind("alt+l", { do: "focus", dir: "right", orTab: true }),
-  bind("alt+j", { do: "focus", dir: "down" }),
-  bind("alt+k", { do: "focus", dir: "up" }),
   bind(["alt+=", "alt+shift+="], { do: "resize", grow: true }),
   bind("alt+-", { do: "resize", grow: false }),
   bind("alt+[", { do: "swapLayout", step: -1 }),
@@ -208,7 +203,12 @@ function findBind(
   event: ShortcutEventLike,
   platform: string,
 ): Bind | null {
-  return binds.find((b) => b.keys.some((key) => matches(event, key, platform))) ?? null;
+  const mac = /mac/i.test(platform);
+  return (
+    binds.find(
+      (b) => (mac || b.macOnly !== true) && b.keys.some((key) => matches(event, key, platform)),
+    ) ?? null
+  );
 }
 
 export type Resolution =
@@ -254,15 +254,12 @@ export const MODE_HINTS: Readonly<
 > = {
   normal: [
     ["⌥N", "new pane"],
-    ["⌥H ⌥J ⌥K ⌥L", "focus"],
-    ["Home End PgUp PgDn", "focus"],
-    ["⌃←↓↑→", "focus"],
-    ["⌘↑ ⌘↓", "focus up / down"],
-    ["⌘⇧[ ⌘⇧]", "previous / next tab"],
+    ["fn←↓↑→  ⌃←↓↑→", "focus"],
+    ["⌘⇧[ ⌘⇧]  ⌃[ ⌃]", "previous / next tab"],
     ["⌥= ⌥−", "grow / shrink"],
     ["⌥[ ⌥]", "change layout"],
     ["⌥I ⌥O", "move tab"],
-    ["⇧PgUp ⇧PgDn", "page scroll"],
+    ["⇧fn↓↑  ⌃⇧↓↑", "page scroll"],
     ["⇪", "lock / unlock"],
   ],
   pane: [
@@ -283,7 +280,6 @@ export const MODE_HINTS: Readonly<
     ["1–9", "go to"],
     ["⇥", "last"],
     ["b [ ]", "break pane out"],
-    ["space", "change layout"],
   ],
   resize: [
     ["←↓↑→", "move border"],

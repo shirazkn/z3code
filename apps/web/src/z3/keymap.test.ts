@@ -51,9 +51,15 @@ describe("resolveKey", () => {
     expect(up.kind === "bind" && up.bind.action).toEqual({ do: "focus", dir: "up" });
     const layout = resolve("normal", "alt+]");
     expect(layout.kind === "bind" && layout.bind.action).toEqual({ do: "swapLayout", step: 1 });
-    const direct = resolve("normal", "alt+h");
-    // Alt+H with no pane to the left must not type a symbol.
+    // Alt+N while a pane is being made must not type a symbol.
+    const direct = resolve("normal", "alt+n");
     expect(direct.kind === "bind" && direct.swallow).toBe(true);
+    // Ctrl+[ steps tabs on a Mac only; elsewhere it is the stock Back chord.
+    const back = resolve("normal", "ctrl+[");
+    expect(back.kind === "bind" && back.bind.action).toEqual({ do: "stepTab", step: -1 });
+    expect(resolveKey("normal", key("ctrl+["), "Linux x86_64").kind).toBe("pass");
+    // Cmd+Up stays the text field's jump to the top.
+    expect(resolve("normal", "cmd+ArrowUp").kind).toBe("pass");
   });
 
   it("keeps the dotfiles deltas: c splits right, r renames", () => {
