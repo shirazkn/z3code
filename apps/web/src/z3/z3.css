@@ -200,7 +200,6 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  transition: background-color 40ms ease-out;
 }
 
 [data-z3-split] [data-z3-cell]:not([data-focused])::after {
@@ -410,7 +409,6 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
   [data-sidebar="sidebar"] li[data-thread-item] > *,
   [data-z3-cell],
   [data-z3-mode-label],
-  [data-z3-cell]::after,
   [data-sidebar="sidebar"] {
     transition: none;
   }

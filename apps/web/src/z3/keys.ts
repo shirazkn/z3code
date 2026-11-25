@@ -1,3 +1,5 @@
+import { flushSync } from "react-dom";
+
 import { isHostActive, runAction } from "./actions";
 import { setFirstKeyHandler } from "./firstKeyListener";
 import { resolveKey } from "./keymap";
@@ -25,7 +27,11 @@ function onKeyDown(event: KeyboardEvent): void {
     if (action !== undefined && event.repeat && ONCE.has(action.do)) {
       // Swallowed below.
     } else if (action !== undefined) {
-      const acted = runAction(action);
+      // Rendered in the key's own task, so the focus cue makes the next frame.
+      let acted = false;
+      flushSync(() => {
+        acted = runAction(action);
+      });
       if (next !== undefined) setMode(next);
       // A plain normal-mode key with nothing to act on keeps its stock meaning.
       if (!acted && !resolution.swallow) return;

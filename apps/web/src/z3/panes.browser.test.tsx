@@ -113,7 +113,7 @@ it("pane mode splits, moves focus with the route, swallows other keys, and close
   expect(mode()).toBe("pane");
   await press("{Escape}");
   expect(mode()).toBe("normal");
-  await press("{Alt>}l{/Alt}");
+  await press("{Control>}{ArrowRight}{/Control}");
   await vi.waitFor(() => expect(router.state.location.pathname).toBe(draftPath));
   expect(focusedIndex()).toBe(1);
 
@@ -156,6 +156,7 @@ it("tabs show in the strip, and a thread lives in one pane: opening it again jum
   expect(shown).toHaveLength(1);
   await expect.element(page.getByText("Answer 0 for z3-tabs.")).toBeVisible();
 
-  await userEvent.click(stripTabs()[1]!.querySelector("button:last-child")!);
+  // By exact name: the sidebar's rows also name the tab.
+  await userEvent.click(page.getByRole("button", { name: "Tab 2", exact: true }));
   await vi.waitFor(() => expect(router.state.location.pathname).toContain("/draft/"));
 });

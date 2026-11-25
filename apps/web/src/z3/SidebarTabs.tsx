@@ -1,7 +1,7 @@
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { ContextMenuItem, ScopedThreadRef } from "@t3tools/contracts";
 import { XIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 
 import {
   THREAD_CONTEXT_DROP_EVENT,
@@ -40,13 +40,38 @@ export function paneThreadKey(target: ThreadRouteTarget | null): string | null {
   return target?.kind === "server" ? scopedThreadKey(target.threadRef) : null;
 }
 
+// The sidebar's copy of the layout: a string, so a resize or a mode change does not render the
+// sidebar, and read when the page is idle, so the frame that moves pane focus does not wait for it.
+const readLayoutJson = () => JSON.stringify(tabGroups(useZ3Store.getState().layout));
+let sidebarJson = readLayoutJson();
+let sidebarJsonPending = false;
+const sidebarJsonListeners = new Set<() => void>();
+const readSidebarJson = () => sidebarJson;
+function subscribeSidebarJson(listener: () => void): () => void {
+  sidebarJsonListeners.add(listener);
+  return () => sidebarJsonListeners.delete(listener);
+}
+useZ3Store.subscribe((state, previous) => {
+  if (state.layout === previous.layout || sidebarJsonPending) return;
+  sidebarJsonPending = true;
+  requestIdleCallback(
+    () => {
+      sidebarJsonPending = false;
+      const next = readLayoutJson();
+      if (next === sidebarJson) return;
+      sidebarJson = next;
+      for (const listener of sidebarJsonListeners) listener();
+    },
+    { timeout: 200 },
+  );
+});
+
 /** The tabs as sidebar groups, and the tab of each thread a pane shows. */
 export function useSidebarTabs(): {
   readonly tabs: ReadonlyArray<SidebarTab>;
   readonly tabOf: ReadonlyMap<string, string>;
 } {
-  // A string, so a resize or a mode change does not render the sidebar.
-  const json = useZ3Store((state) => JSON.stringify(tabGroups(state.layout)));
+  const json = useSyncExternalStore(subscribeSidebarJson, readSidebarJson);
   const tabs = (JSON.parse(json) as TabGroup[]).map((group, index) => ({
     ...group,
     index,
