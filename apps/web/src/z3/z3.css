@@ -93,7 +93,8 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   background-image: none;
 }
 
-/* The rule under the tab bar is a groove: a shadow line over a lit line, short of both ends. */
+/* The rule under the tab bar is a groove: a shadow line over a line of the background's own hue,
+   lighter; short of both ends. */
 [data-z3-tabs]::after {
   content: "";
   position: absolute;
@@ -102,7 +103,7 @@ html[data-theme-id="ember"].dark [data-z3-host] {
   pointer-events: none;
   background: linear-gradient(
     color-mix(in oklab, var(--color-foreground) 20%, transparent) 50%,
-    color-mix(in oklab, var(--color-background), white 70%) 50%
+    oklch(from var(--color-background) calc(l + 0.025) c h) 50%
   );
   mask-image: linear-gradient(to right, transparent, black 1.5rem calc(100% - 1.5rem), transparent);
 }
@@ -110,7 +111,7 @@ html[data-theme-id="ember"].dark [data-z3-host] {
 .dark [data-z3-tabs]::after {
   background: linear-gradient(
     color-mix(in oklab, var(--color-background), black 55%) 50%,
-    color-mix(in oklab, var(--color-foreground) 9%, transparent) 50%
+    oklch(from var(--color-background) calc(l + 0.13) calc(c + 0.015) h) 50%
   );
 }
 
