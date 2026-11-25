@@ -137,7 +137,7 @@ function mapNode(node: PaneNode, fn: (node: PaneNode) => PaneNode): PaneNode {
   return fn(mapped);
 }
 
-/** A palette theme has this many colors (palettes.ts, z3.css). */
+/** A palette theme has this many colors (palettes.ts). */
 const HUES = 4;
 
 /** Gives each pane with no hue a random one of those its tab, then the layout, uses least. */

@@ -11,7 +11,7 @@ import { PALETTE_THEMES, paletteCss, type PaletteTheme } from "./palettes";
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 11;
+const THEME_VERSION = 14;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */
@@ -89,7 +89,7 @@ const Z3_THEME: ThemeDefinition = {
   css: fontCss(Z3_THEME_ID),
 };
 
-/** Fixed surfaces take the palette's neutral; z3.css colors each pane from the theme's CSS. */
+/** Fixed surfaces take the palette's neutral; the theme's CSS colors each pane. */
 function fromPalette(theme: PaletteTheme): ThemeDefinition {
   const colors = (appearance: "light" | "dark") => {
     const variant = theme[appearance];
