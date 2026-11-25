@@ -154,7 +154,7 @@ describe("DesktopAppIdentity", () => {
         const identity = yield* DesktopAppIdentity.DesktopAppIdentity;
         const userDataPath = yield* identity.resolveUserDataPath;
 
-        assert.equal(userDataPath, "/Users/alice/Library/Application Support/t3code-v2");
+        assert.equal(userDataPath, "/Users/alice/Library/Application Support/z3code");
       }),
       { legacyPathExists: true },
     ),
@@ -202,7 +202,10 @@ describe("DesktopAppIdentity", () => {
         assert.isDefined(runtimeName);
         assert.equal(runtimeName, `T3 Code ${stage}`);
         assert.match(runtimeName.replaceAll(" ", ""), /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/);
-        assert.equal(calls.setAboutPanelOptions[0]?.applicationName, `T3 Code (${stage})`);
+        assert.equal(
+          calls.setAboutPanelOptions[0]?.applicationName,
+          stage === "Beta" ? "z3code" : `z3code (${stage})`,
+        );
       }),
       { calls, environment },
     );
