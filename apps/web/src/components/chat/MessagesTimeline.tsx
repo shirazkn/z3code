@@ -1423,6 +1423,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
       <>
         {activityAnnouncer}
         <div
+          data-chat-empty
           className="flex h-full items-center justify-center ps-(--chat-lane-inset-start) pe-(--chat-lane-inset-end)"
           style={{ paddingBottom: emptyPlaceholderInset }}
         >

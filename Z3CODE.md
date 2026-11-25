@@ -58,6 +58,7 @@ Stock commands that moved off a mode key: file picker Cmd+Alt+P, new chat Cmd+Sh
   - `components/chat/{ChatComposer,ComposerControl,ComposerControlsBar,ComposerPrimaryActions,ComposerAttachmentStrip,ComposerSpeechButton,ProviderModelPicker}.tsx`: the compact composer footer (20px controls, 11px text).
   - `components/ChatView.tsx`: four window-level composer-focus and paste listeners also stand down for a background thread.
   - `state/server.ts`: `remapStockKeys` on the app's keybinding list.
+  - `components/chat/MessagesTimeline.tsx`: `data-chat-empty` on the empty-thread hint, which panes hide.
   - `components/chat/TimelineWorkGroupRows.tsx`: the working row label (`Z3Working`).
   - `main.tsx`: `z3/firstKeyListener` loads first, so a mode sees every key before stock listeners.
   - `appInit.tsx`: `adoptZ3Theme`.

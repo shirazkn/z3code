@@ -339,3 +339,33 @@ body [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
   width: 1.2em;
   color: var(--color-primary);
 }
+
+/* The composer hint stays on one line and far back; a wrapped one runs under the footer. */
+[data-z3-cell] [data-chat-composer-body] .text-placeholder.pointer-events-none {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.3;
+}
+
+/* The pane title keeps clear of the buttons that show, not of the stock row of hidden ones. */
+[data-z3-cell] [data-chat-header] > .pr-24 {
+  padding-right: 0.5rem;
+}
+
+[data-z3-cell]:has([data-z3-artifact]) [data-chat-header] > .pr-24 {
+  padding-right: 2.25rem;
+}
+
+[data-z3-cell][data-focused] [data-chat-header] > .pr-24 {
+  padding-right: 5.5rem;
+}
+
+[data-z3-cell][data-focused]:has([data-z3-artifact]) [data-chat-header] > .pr-24 {
+  padding-right: 7.75rem;
+}
+
+/* An empty thread shows no hint: in a short pane it sits under the provider notices. */
+[data-z3-cell] [data-chat-empty] {
+  display: none;
+}
