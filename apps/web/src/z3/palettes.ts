@@ -45,7 +45,144 @@ const KIDA: PaletteTheme = {
   },
 };
 
-export const PALETTE_THEMES: ReadonlyArray<PaletteTheme> = [KIDA];
+// Red on bone and soot: the red pair is the only color.
+const FIGURE8: PaletteTheme = {
+  id: "figure8",
+  label: "figure8",
+  dark: {
+    bg: "#0a0707",
+    fg: "#efe9e4",
+    neutral: "#c9c0b8",
+    neutralHover: "#e2dbd4",
+    onNeutral: "#120d0c",
+    selection: "#2b201e",
+    hues: ["#d1483d", "#a8594d", "#bdb3a8", "#8f8a86"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f5f1ec",
+    fg: "#1a1413",
+    neutral: "#4a4340",
+    neutralHover: "#342e2c",
+    onNeutral: "#faf7f3",
+    selection: "#e4dbd3",
+    hues: ["#a82a22", "#7d3a31", "#6b6259", "#4f4b48"],
+    shade: "rgb(26 20 19 / 0.3)",
+  },
+};
+
+// Open water: two sea tones, a haze blue, and sand as the one warm note.
+const VANISHER: PaletteTheme = {
+  id: "vanisher",
+  label: "vanisher",
+  dark: {
+    bg: "#04080a",
+    fg: "#e3ecee",
+    neutral: "#a9bcc2",
+    neutralHover: "#cbd9dd",
+    onNeutral: "#081013",
+    selection: "#16272d",
+    hues: ["#4f8fa8", "#6fb0a6", "#8fa3b8", "#c2a878"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#eef4f5",
+    fg: "#0f1c20",
+    neutral: "#3a4f57",
+    neutralHover: "#28393f",
+    onNeutral: "#f5fafb",
+    selection: "#d3e1e4",
+    hues: ["#1f5f78", "#2a6e64", "#465c75", "#7a6230"],
+    shade: "rgb(15 28 32 / 0.3)",
+  },
+};
+
+// One green at three strengths, and a grey.
+const BRAT: PaletteTheme = {
+  id: "brat",
+  label: "brat",
+  dark: {
+    bg: "#060804",
+    fg: "#eef3e4",
+    neutral: "#b9c4a6",
+    neutralHover: "#d6dfc6",
+    onNeutral: "#0d1207",
+    selection: "#222b12",
+    hues: ["#8ace00", "#6f9a1c", "#c5dd7a", "#9a9f90"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f4f8ea",
+    fg: "#141a08",
+    neutral: "#44502c",
+    neutralHover: "#303a1d",
+    onNeutral: "#f9fcf1",
+    selection: "#dce6c4",
+    hues: ["#4f7a00", "#3f5f0f", "#6b7a2a", "#565b4b"],
+    shade: "rgb(20 26 8 / 0.3)",
+  },
+};
+
+// Greyscale; the orange is the one color.
+const MDVLN: PaletteTheme = {
+  id: "mdvln",
+  label: "mdvln",
+  dark: {
+    bg: "#070707",
+    fg: "#ebebea",
+    neutral: "#bdbcb9",
+    neutralHover: "#dad9d6",
+    onNeutral: "#0f0f0f",
+    selection: "#262524",
+    hues: ["#e0762a", "#9c9a96", "#c4bcae", "#7f8791"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f3f2f0",
+    fg: "#161616",
+    neutral: "#474644",
+    neutralHover: "#323130",
+    onNeutral: "#f9f8f7",
+    selection: "#dedcd8",
+    hues: ["#b0500f", "#5c5a57", "#6e6657", "#4b535d"],
+    shade: "rgb(22 22 22 / 0.3)",
+  },
+};
+
+// Embers in smoke: red, rose and amber over ash.
+const PHOENIX: PaletteTheme = {
+  id: "phoenix",
+  label: "phoenix",
+  dark: {
+    bg: "#090605",
+    fg: "#efe6e1",
+    neutral: "#c4b3aa",
+    neutralHover: "#dfd1c9",
+    onNeutral: "#130c0a",
+    selection: "#2c1e1a",
+    hues: ["#c0564a", "#b87a8a", "#c98a4b", "#8f7f7a"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f6f0ec",
+    fg: "#1c1412",
+    neutral: "#52423c",
+    neutralHover: "#3b2e29",
+    onNeutral: "#fbf7f4",
+    selection: "#e6d9d1",
+    hues: ["#96332a", "#7f4557", "#8a5519", "#5c4f4a"],
+    shade: "rgb(28 20 18 / 0.3)",
+  },
+};
+
+export const PALETTE_THEMES: ReadonlyArray<PaletteTheme> = [
+  KIDA,
+  FIGURE8,
+  VANISHER,
+  BRAT,
+  MDVLN,
+  PHOENIX,
+];
 
 export function paletteOf(themeId: string, mode: "light" | "dark"): ReadonlyArray<string> | null {
   return PALETTE_THEMES.find((theme) => theme.id === themeId)?.[mode].hues ?? null;
