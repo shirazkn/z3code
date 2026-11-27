@@ -11,7 +11,7 @@ import { PALETTE_THEMES, paletteCss, type PaletteTheme } from "./palettes";
 
 export const Z3_THEME_ID = "z3";
 /** Raise with every palette change, so stored copies update. */
-const THEME_VERSION = 15;
+const THEME_VERSION = 16;
 const ADOPTED_KEY = "z3code:theme-adopted";
 const SELECTED_KEY = "z3code:theme-selected";
 /** Raise to select the z3 theme again on every install. */

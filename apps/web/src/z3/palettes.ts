@@ -175,6 +175,84 @@ const PHOENIX: PaletteTheme = {
   },
 };
 
+// Night lights: magenta through violet to blue, with one red.
+const VEGAS: PaletteTheme = {
+  id: "vegas",
+  label: "vegas",
+  dark: {
+    bg: "#07050a",
+    fg: "#ede7f2",
+    neutral: "#bfb4cc",
+    neutralHover: "#dad1e4",
+    onNeutral: "#100b16",
+    selection: "#261c33",
+    hues: ["#d0508f", "#9a6fd0", "#5b82d8", "#cf5068"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f5f1f8",
+    fg: "#17111f",
+    neutral: "#4b4159",
+    neutralHover: "#352d40",
+    onNeutral: "#faf7fc",
+    selection: "#e2d9ec",
+    hues: ["#a02465", "#6a3fa8", "#2f55ad", "#a52a40"],
+    shade: "rgb(23 17 31 / 0.3)",
+  },
+};
+
+// A warm run of red, orange and yellow; the blue is the one cool note.
+const RAINBOWS: PaletteTheme = {
+  id: "rainbows",
+  label: "rainbows",
+  dark: {
+    bg: "#070605",
+    fg: "#f0ece6",
+    neutral: "#c2bbb2",
+    neutralHover: "#ddd7cf",
+    onNeutral: "#100e0c",
+    selection: "#28231e",
+    hues: ["#d9503a", "#e08a2e", "#d6b83a", "#4f9fc0"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f6f3ee",
+    fg: "#181513",
+    neutral: "#4a4540",
+    neutralHover: "#34302c",
+    onNeutral: "#fbf9f6",
+    selection: "#e5dfd6",
+    hues: ["#a8301f", "#93520c", "#75600a", "#1f6485"],
+    shade: "rgb(24 21 19 / 0.3)",
+  },
+};
+
+// Chrome and sky: two blues and a silver, with pink as the one warm note.
+const IMAGINAL: PaletteTheme = {
+  id: "imaginal",
+  label: "imaginal",
+  dark: {
+    bg: "#05070b",
+    fg: "#e8eef5",
+    neutral: "#b6c2d0",
+    neutralHover: "#d4dde7",
+    onNeutral: "#0a0f17",
+    selection: "#1b2636",
+    hues: ["#6fb2e0", "#5f86d6", "#b4bcc6", "#e08ab4"],
+    shade: "#000000",
+  },
+  light: {
+    bg: "#f1f5fa",
+    fg: "#111924",
+    neutral: "#3f4c5d",
+    neutralHover: "#2c3643",
+    onNeutral: "#f7fafd",
+    selection: "#d6dfea",
+    hues: ["#1f6396", "#2f4fa3", "#56606c", "#a63770"],
+    shade: "rgb(17 25 36 / 0.3)",
+  },
+};
+
 export const PALETTE_THEMES: ReadonlyArray<PaletteTheme> = [
   KIDA,
   FIGURE8,
@@ -182,6 +260,9 @@ export const PALETTE_THEMES: ReadonlyArray<PaletteTheme> = [
   BRAT,
   MDVLN,
   PHOENIX,
+  VEGAS,
+  RAINBOWS,
+  IMAGINAL,
 ];
 
 export function paletteOf(themeId: string, mode: "light" | "dark"): ReadonlyArray<string> | null {
